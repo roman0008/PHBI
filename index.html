@@ -268,7 +268,7 @@
                                         <tbody className="divide-y divide-slate-100 font-medium">
                                             {filteredTransactions.map((t, idx) => (
                                                 <tr key={idx} className="hover:bg-slate-50">
-                                                    <td className="px-6 py-4 text-slate-400 text-xs">{t.date ? new Date(t.date).toISOString().split("T")[0] : "-"}</td>
+                                                    <td className="px-6 py-4 text-slate-400 text-xs">{t.date ? new Date(t.date).toLocaleDateString("id-ID") : "-"}</td>
                                                     <td className="px-6 py-4 font-bold text-slate-700">{t.description}</td>
                                                     <td className="px-6 py-4"><span className="px-2 py-1 bg-slate-100 rounded text-[10px] uppercase">{t.category}</span></td>
                                                     <td className={`px-6 py-4 text-right font-black ${t.type === 'in' ? 'text-green-600' : 'text-red-600'}`}>
