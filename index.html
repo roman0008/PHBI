@@ -16,35 +16,19 @@
 
 body { font-family: 'Plus Jakarta Sans', sans-serif; }
 
-/* ✅ FIX MOBILE OVERFLOW */
-html, body {
-    overflow-x: hidden;
-}
+/* FIX MOBILE */
+html, body { overflow-x: hidden; }
 
 /* MARQUEE */
-.marquee {
-    white-space: nowrap;
-    overflow: hidden;
-}
+.marquee { white-space: nowrap; overflow: hidden; }
 .marquee p {
     display: inline-block;
     padding-left: 100%;
     animation: marquee 25s linear infinite;
     font-size: 12px;
 }
-@media (min-width:768px){
-    .marquee p { font-size:14px; }
-}
-@keyframes marquee {
-    0% { transform: translate(0); }
-    100% { transform: translate(-100%); }
-}
-
-/* GLASS */
-.glass-effect {
-    background: rgba(255,255,255,0.8);
-    backdrop-filter: blur(10px);
-}
+@media(min-width:768px){ .marquee p{font-size:14px;} }
+@keyframes marquee { 0%{transform:translate(0);} 100%{transform:translate(-100%);} }
 
 /* HERO */
 .hero-gradient {
@@ -62,121 +46,140 @@ html, body {
 <script type="text/babel">
 const { useState, useEffect } = React;
 
-const GSHEET_URL = "https://script.google.com/macros/s/AKfycbw488C_jSYN96tRoU9nM-tBbCiqOV1xBAd68uaxa2fn4dQ52_ylzWos1-7YvmtFAQEt/exec"; 
+const GSHEET_URL = "https://script.google.com/macros/s/AKfycbw488C_jSYN96tRoU9nM-tBbCiqOV1xBAd68uaxa2fn4dQ52_ylzWos1-7YvmtFAQEt/exec";
+const ADMIN_USER = "admin";
+const ADMIN_PASS = "admin123";
 
 const Icon = ({ name, size=20 }) => <i data-lucide={name} style={{width:size,height:size}}></i>;
 
 const App = () => {
+
+const [view,setView]=useState('dashboard');
 const [sidebarOpen,setSidebarOpen]=useState(false);
+const [isAdmin,setIsAdmin]=useState(false);
+const [showLoginModal,setShowLoginModal]=useState(false);
+
 const [transactions,setTransactions]=useState([]);
+const [searchTerm,setSearchTerm]=useState('');
 const [currentTime,setCurrentTime]=useState(new Date());
 
+const [formData,setFormData]=useState({
+description:'',amount:'',type:'in',category:'Donasi',
+date:new Date().toISOString().split('T')[0]
+});
+
 useEffect(()=>{
-    const t=setInterval(()=>setCurrentTime(new Date()),1000);
-    fetchData();
-    setTimeout(()=>lucide.createIcons(),500);
-    return ()=>clearInterval(t);
+const timer=setInterval(()=>setCurrentTime(new Date()),1000);
+fetchData();
+setTimeout(()=>lucide.createIcons(),500);
+return()=>clearInterval(timer);
 },[]);
 
-useEffect(()=>{lucide.createIcons();},[transactions]);
+useEffect(()=>{lucide.createIcons();},[transactions,view]);
 
 const fetchData = async ()=>{
-    try{
-        const res = await fetch(GSHEET_URL);
-        const data = await res.json();
-        setTransactions(data.sort((a,b)=>b.id-a.id));
-    }catch(e){console.log(e);}
+try{
+const res=await fetch(GSHEET_URL);
+const data=await res.json();
+setTransactions(data.sort((a,b)=>b.id-a.id));
+}catch(e){console.log(e);}
 };
 
-const formatCurrency = (n)=>
+const formatCurrency = n =>
 new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(n||0);
 
 const totalIn = transactions.filter(t=>t.type==='in').reduce((a,b)=>a+Number(b.amount),0);
 const totalOut = transactions.filter(t=>t.type==='out').reduce((a,b)=>a+Number(b.amount),0);
 const balance = totalIn-totalOut;
 
+const handleLogin = (e)=>{
+e.preventDefault();
+if(formData.username===ADMIN_USER && formData.password===ADMIN_PASS){
+setIsAdmin(true);
+setShowLoginModal(false);
+}
+};
+
+const filtered = transactions.filter(t=>t.description?.toLowerCase().includes(searchTerm.toLowerCase()));
+
 return (
-<div className="flex min-h-screen bg-slate-50">
+<div className="flex min-h-screen">
 
 {/* SIDEBAR */}
 <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-white border-r transform transition lg:translate-x-0 ${sidebarOpen?'translate-x-0':'-translate-x-full'}`}>
 <div className="p-6 text-center font-extrabold text-green-800">MABDA'IL FALAH</div>
+
+<nav className="p-4 space-y-2">
+<button onClick={()=>{setView('dashboard');setSidebarOpen(false)}} className="w-full text-left">Dashboard</button>
+<button onClick={()=>{setView('history');setSidebarOpen(false)}} className="w-full text-left">History</button>
+<button onClick={()=>{setView('struktur');setSidebarOpen(false)}} className="w-full text-left">Pengurus</button>
+{isAdmin && <button onClick={()=>{setView('add');setSidebarOpen(false)}}>Input</button>}
+</nav>
+
+<div className="absolute bottom-4 w-full px-4">
+{!isAdmin ?
+<button onClick={()=>setShowLoginModal(true)} className="w-full bg-black text-white p-3 rounded">Login</button>
+:
+<button onClick={()=>setIsAdmin(false)} className="w-full bg-red-500 text-white p-3 rounded">Logout</button>}
+</div>
 </aside>
 
-{/* OVERLAY MOBILE */}
-{sidebarOpen && (
-<div className="fixed inset-0 bg-black/40 z-40 lg:hidden"
-onClick={()=>setSidebarOpen(false)}></div>
-)}
+{/* OVERLAY */}
+{sidebarOpen && <div className="fixed inset-0 bg-black/40 lg:hidden" onClick={()=>setSidebarOpen(false)}></div>}
 
 {/* MAIN */}
-<main className="flex-1 lg:ml-72 flex flex-col min-h-screen w-full max-w-full overflow-x-hidden">
+<main className="flex-1 lg:ml-72 w-full max-w-full overflow-x-hidden flex flex-col">
 
-{/* TOP BAR */}
-<div className="bg-green-900 text-white py-2 px-3 sm:px-6 flex flex-wrap items-center justify-between gap-2 sm:gap-4 sticky top-0 z-40">
+{/* TOPBAR */}
+<div className="bg-green-900 text-white px-3 py-2 flex justify-between">
 <div>{currentTime.toLocaleTimeString()}</div>
-<div className="marquee flex-1">
-<p>🌟 Laporan kas update • 🕌 Donasi • 📅 {currentTime.toLocaleDateString()}</p>
-</div>
+<div className="marquee flex-1"><p>Kas PHBI Update</p></div>
 </div>
 
-{/* MOBILE HEADER */}
 <header className="lg:hidden p-4 flex justify-between bg-white border-b">
-<h2 className="font-bold text-green-800">MABDA'IL FALAH</h2>
-<button onClick={()=>setSidebarOpen(true)} className="bg-green-700 text-white px-3 py-1 rounded">Menu</button>
+<button onClick={()=>setSidebarOpen(true)}>☰</button>
 </header>
 
 <div className="p-3 sm:p-4 md:p-8 flex-1">
 
 {/* HERO */}
-<div className="relative h-40 md:h-64 rounded-3xl mb-6 overflow-hidden hero-gradient flex flex-col justify-end p-4 md:p-8">
-<h1 className="text-white text-xl sm:text-2xl md:text-5xl font-black">Kas Digital PHBI</h1>
-<p className="text-white/80 text-sm md:text-lg">Transparansi keuangan</p>
+<div className="h-40 md:h-64 rounded-3xl mb-6 hero-gradient p-4 md:p-8 text-white">
+<h1 className="text-xl sm:text-2xl md:text-5xl font-black">Kas Digital</h1>
 </div>
 
 {/* DASHBOARD */}
-<div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-<div className="bg-white p-5 rounded-2xl shadow">
-Saldo<br/><b>{formatCurrency(balance)}</b>
+{view==='dashboard' && (
+<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div className="bg-white p-5 rounded">{formatCurrency(balance)}</div>
+<div className="bg-white p-5 rounded">{formatCurrency(totalIn)}</div>
+<div className="bg-white p-5 rounded">{formatCurrency(totalOut)}</div>
 </div>
-<div className="bg-white p-5 rounded-2xl shadow">
-Masuk<br/><b>{formatCurrency(totalIn)}</b>
-</div>
-<div className="bg-white p-5 rounded-2xl shadow">
-Keluar<br/><b>{formatCurrency(totalOut)}</b>
-</div>
-</div>
+)}
 
-{/* TABLE */}
-<div className="bg-white rounded-2xl shadow overflow-x-auto w-full">
-<table className="w-full min-w-[600px] text-sm">
-<thead className="bg-slate-100">
-<tr>
-<th className="p-3">Tanggal</th>
-<th>Keterangan</th>
-<th>Nominal</th>
-</tr>
-</thead>
+{/* HISTORY */}
+{view==='history' && (
+<div className="bg-white rounded overflow-x-auto w-full">
+<input className="p-2 w-full" placeholder="Cari..." onChange={e=>setSearchTerm(e.target.value)} />
+<table className="w-full min-w-[600px]">
 <tbody>
-{transactions.map((t,i)=>(
-<tr key={i} className="border-b">
-<td className="p-3">{t.date}</td>
+{filtered.map((t,i)=>(
+<tr key={i}>
+<td>{t.date}</td>
 <td>{t.description}</td>
-<td className={t.type==='in'?'text-green-600':'text-red-600'}>
-{formatCurrency(t.amount)}
-</td>
+<td>{formatCurrency(t.amount)}</td>
 </tr>
 ))}
 </tbody>
 </table>
 </div>
+)}
+
+{/* PENGURUS */}
+{view==='struktur' && <div className="bg-white p-6 rounded">Struktur Pengurus</div>}
 
 </div>
 
-{/* FOOTER */}
-<footer className="bg-white border-t p-6 text-center text-sm text-slate-500">
-© {new Date().getFullYear()} MABDA'IL FALAH
-</footer>
+<footer className="bg-white border-t p-4 text-center">© PHBI</footer>
 
 </main>
 </div>
@@ -185,6 +188,5 @@ Keluar<br/><b>{formatCurrency(totalOut)}</b>
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
 </script>
-
 </body>
 </html>
