@@ -176,7 +176,7 @@
             );
 
             return (
-                <div className="flex h-screen bg-slate-50 font-sans">
+                <div className="flex min-h-screen bg-slate-50 font-sans">
                     {/* Sidebar */}
                     <aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-white border-r transform transition-transform lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                         <div className="p-6 border-b text-center">
@@ -219,7 +219,7 @@
                     </aside>
 
                     {/* Main Content */}
-                    <main className="flex-1 lg:ml-64 p-4 md:p-8 overflow-y-auto">
+                    <<main className="flex flex-col flex-1 lg:ml-64 p-4 md:p-8">
                         <header className="flex items-center justify-between mb-8">
                             <h2 className="text-2xl font-black text-slate-800 uppercase">{view}</h2>
                             <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 bg-green-700 text-white rounded-lg"><Icon name="menu"/></button>
