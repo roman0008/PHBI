@@ -18,7 +18,7 @@
         
         // --- KONFIGURASI ---
         // MASUKKAN URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI
-        const GSHEET_URL = "https://script.google.com/macros/s/AKfycbxQTMbv6RfCz51ObsPLdvHg2EJmiyPLLQtx91MZ96svAz_8e5pkKgCtk6XXRRwZiLJP/exec"; 
+        const GSHEET_URL = "https://script.google.com/macros/s/AKfycbzPH1o99sCbnpy2cI76HsxIOpxk7j98aS05k5pZTtn-hpc0SddP8XGIbdQwKJIF5fjV/exec"; 
         const ADMIN_USER = "admin";
         const ADMIN_PASS = "admin123";
 
@@ -92,36 +92,26 @@
           const handleSubmit = async (e) => {
     e.preventDefault();
 
-    setLoading(true);
-
     const payload = {
+        ...formData,
+        amount: parseFloat(formData.amount),
         id: editingId || Date.now(),
-        description: formData.description,
-        amount: formData.amount,
-        type: formData.type,
-        category: formData.category,
-        date: formData.date,
         action: editingId ? 'edit' : 'add'
     };
 
     try {
-        const formBody = new URLSearchParams(payload);
-
-        const response = await fetch(GSHEET_URL, {
-            method: 'POST',
+        const res = await fetch(GSHEET_URL, {
+            method: "POST",
             headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
+                "Content-Type": "application/json"
             },
-            body: formBody.toString()
+            body: JSON.stringify(payload)
         });
 
-        const result = await response.json();
+        const result = await res.json();
 
         if (result.status === "success") {
-            alert("✅ Data berhasil disimpan!");
-
             await fetchData();
-
             setEditingId(null);
             setFormData({
                 description: '',
@@ -130,52 +120,42 @@
                 category: 'Donasi',
                 date: new Date().toISOString().split('T')[0]
             });
-
             setView('history');
-
         } else {
-            alert("❌ Error: " + result.message);
+            alert("Gagal menyimpan");
         }
 
-    } catch (error) {
-        console.error(error);
-        alert("❌ Gagal koneksi ke server!");
-    } finally {
-        setLoading(false);
+    } catch (err) {
+        console.error(err);
+        alert("Terjadi kesalahan saat menyimpan.");
     }
 };
+   
             const deleteTransaction = async (id) => {
     if (!confirm("Hapus data ini?")) return;
 
-    setLoading(true);
-
     try {
-        const formBody = new URLSearchParams({
-            action: "delete",
-            id: id
-        });
-
-        const response = await fetch(GSHEET_URL, {
-            method: 'POST',
+        const res = await fetch(GSHEET_URL, {
+            method: "POST",
             headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
+                "Content-Type": "application/json"
             },
-            body: formBody.toString()
+            body: JSON.stringify({
+                action: "delete",
+                id: id
+            })
         });
 
-        const result = await response.json();
+        const result = await res.json();
 
         if (result.status === "success") {
-            alert("✅ Data berhasil dihapus!");
             fetchData();
         } else {
-            alert("❌ Gagal hapus: " + result.message);
+            alert("Gagal hapus");
         }
 
-    } catch (error) {
-        alert("❌ Koneksi gagal!");
-    } finally {
-        setLoading(false);
+    } catch (err) {
+        alert("Error hapus data");
     }
 };
 
