@@ -8,24 +8,73 @@
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Lucide Icons Library -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .marquee-container {
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            background: #15803d;
+            color: white;
+            padding: 10px 0;
+            position: relative;
+        }
+
+        .marquee-content {
+            display: inline-block;
+            animation: marquee 40s linear infinite;
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        
+        @media print {
+            .no-print { display: none !important; }
+            main { margin-left: 0 !important; padding: 0 !important; }
+        }
+
+        /* Prevent icon jumping by fixing height */
+        i[data-lucide] {
+            display: inline-block;
+            vertical-align: middle;
+            line-height: 1;
+        }
+    </style>
 </head>
-<body>
+<body class="bg-slate-50 text-slate-900">
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState, useEffect, useMemo } = React;
         
-        // --- KONFIGURASI ---
-        // MASUKKAN URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI
         const GSHEET_URL = "https://script.google.com/macros/s/AKfycbw488C_jSYN96tRoU9nM-tBbCiqOV1xBAd68uaxa2fn4dQ52_ylzWos1-7YvmtFAQEt/exec"; 
         const ADMIN_USER = "admin";
         const ADMIN_PASS = "admin123";
 
-        // Icons placeholder (Lucide)
-        const Icon = ({ name, size = 20, className = "" }) => {
-            return <i data-lucide={name} style={{ width: size, height: size }} className={className}></i>;
-        };
+        // Static Icon Component
+        const Icon = ({ name, size = 20, className = "" }) => (
+            <i data-lucide={name} className={`${className}`} style={{ width: size, height: size }}></i>
+        );
 
         const App = () => {
             const [isAdmin, setIsAdmin] = useState(false);
@@ -35,6 +84,366 @@
             const [view, setView] = useState('dashboard');
             const [sidebarOpen, setSidebarOpen] = useState(false);
             const [searchTerm, setSearchTerm] = useState('');
+            const [editingId, setEditingId] = useState(null);
+            const [loading, setLoading] = useState(false);
+            const [transactions, setTransactions] = useState([]);
+            const [currentTime, setCurrentTime] = useState(new Date());
+
+            const [formData, setFormData] = useState({
+                description: '',
+                amount: '',
+                type: 'in',
+                category: 'Donasi',
+                date: new Date().toISOString().split('T')[0]
+            });
+
+            // Effect to handle Lucide icons initialization globally
+            useEffect(() => {
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                }
+            }, [view, showLoginModal, isAdmin, sidebarOpen, transactions]);
+
+            useEffect(() => {
+                const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+                fetchData();
+                return () => clearInterval(timer);
+            }, []);
+
+            const fetchData = async () => {
+                setLoading(true);
+                try {
+                    const response = await fetch(GSHEET_URL);
+                    const data = await response.json();
+                    setTransactions(data.sort((a, b) => b.id - a.id));
+                } catch (error) {
+                    console.error("Fetch error:", error);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const handleLogin = (e) => {
+                e.preventDefault();
+                if (loginData.username === ADMIN_USER && loginData.password === ADMIN_PASS) {
+                    setIsAdmin(true);
+                    setShowLoginModal(false);
+                    setLoginError('');
+                    setLoginData({ username: '', password: '' });
+                } else {
+                    setLoginError('Username atau Password salah!');
+                }
+            };
+
+            const totals = useMemo(() => {
+                const tin = transactions.filter(t => t.type === 'in').reduce((acc, curr) => acc + Number(curr.amount), 0);
+                const tout = transactions.filter(t => t.type === 'out').reduce((acc, curr) => acc + Number(curr.amount), 0);
+                return { in: tin, out: tout, balance: tin - tout };
+            }, [transactions]);
+
+            const formatCurrency = (amount) => {
+                return new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR',
+                    minimumFractionDigits: 0
+                }).format(amount || 0);
+            };
+
+            const filteredTransactions = transactions.filter(t => 
+                t.description?.toString().toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            return (
+                <div className="flex flex-col min-h-screen bg-[#F8FAFC]">
+                    {/* Header */}
+                    <header className="no-print sticky top-0 z-50 glass-effect border-b border-slate-200 px-4 md:px-8 py-3 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 hover:bg-slate-100 rounded-lg">
+                                <Icon name="menu" className="text-green-700" />
+                            </button>
+                            <div>
+                                <h1 className="text-lg md:text-xl font-extrabold text-green-800">MABDA'IL FALAH</h1>
+                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Digital Finance PHBI</p>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col items-end">
+                            <div className="text-xl md:text-2xl font-mono font-black text-slate-800 tabular-nums leading-none">
+                                {currentTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                            </div>
+                            <div className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-tighter mt-1">
+                                {currentTime.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* Banner Marquee */}
+                    <div className="no-print relative overflow-hidden">
+                        <div className="marquee-container">
+                            <div className="marquee-content">
+                                <span className="mx-10">Selamat Datang di Sistem Informasi Keuangan PHBI Mabda'il Falah</span>
+                                <span className="mx-10">•</span>
+                                <span className="mx-10">Total Saldo: {formatCurrency(totals.balance)}</span>
+                                <span className="mx-10">•</span>
+                                <span className="mx-10">Transparansi dan Amanah Adalah Prioritas Kami</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-1 overflow-hidden">
+                        {/* Sidebar */}
+                        <aside className={`fixed inset-y-0 left-0 z-[60] w-64 bg-white border-r transform transition-transform duration-300 lg:translate-x-0 lg:static ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+                            <div className="p-6 border-b lg:hidden flex justify-between items-center">
+                                <span className="font-bold text-green-700 text-xs tracking-widest uppercase">Navigasi</span>
+                                <button onClick={() => setSidebarOpen(false)}><Icon name="x" size={20}/></button>
+                            </div>
+                            <nav className="mt-6 px-4 space-y-2">
+                                <button onClick={() => {setView('dashboard'); setSidebarOpen(false)}} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm ${view === 'dashboard' ? 'bg-green-700 text-white' : 'text-slate-500 hover:bg-slate-50'}`}>
+                                    <Icon name="layout-dashboard" size={18}/> Dashboard
+                                </button>
+                                <button onClick={() => {setView('history'); setSidebarOpen(false)}} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm ${view === 'history' ? 'bg-green-700 text-white' : 'text-slate-500 hover:bg-slate-50'}`}>
+                                    <Icon name="history" size={18}/> Riwayat Kas
+                                </button>
+                                <button onClick={() => {setView('struktur'); setSidebarOpen(false)}} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm ${view === 'struktur' ? 'bg-green-700 text-white' : 'text-slate-500 hover:bg-slate-50'}`}>
+                                    <Icon name="users" size={18}/> Kepengurusan
+                                </button>
+                                {isAdmin && (
+                                    <button onClick={() => {setView('add'); setSidebarOpen(false)}} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm ${view === 'add' ? 'bg-blue-600 text-white' : 'text-slate-500 hover:bg-slate-50'}`}>
+                                        <Icon name="plus-circle" size={18}/> {editingId ? "Edit Transaksi" : "Input Baru"}
+                                    </button>
+                                )}
+                            </nav>
+
+                            <div className="absolute bottom-6 left-4 right-4 space-y-3">
+                                <button onClick={fetchData} className="w-full py-2.5 bg-slate-50 text-slate-500 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 border">
+                                    <Icon name="refresh-cw" size={14} className={loading ? "animate-spin" : ""}/> REFRESH DATA
+                                </button>
+                                {!isAdmin ? (
+                                    <button onClick={() => setShowLoginModal(true)} className="w-full py-3.5 bg-slate-900 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-lg">
+                                        <Icon name="lock" size={14}/> LOGIN ADMIN
+                                    </button>
+                                ) : (
+                                    <button onClick={() => setIsAdmin(false)} className="w-full py-3.5 bg-red-50 text-red-600 rounded-xl font-bold text-xs flex items-center justify-center gap-2">
+                                        <Icon name="log-out" size={14}/> KELUAR ADMIN
+                                    </button>
+                                )}
+                            </div>
+                        </aside>
+
+                        {sidebarOpen && <div onClick={() => setSidebarOpen(false)} className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[55] lg:hidden"></div>}
+
+                        {/* Main */}
+                        <main className="flex-1 p-4 md:p-10 overflow-y-auto">
+                            {view === 'dashboard' && (
+                                <div className="animate-in fade-in duration-500">
+                                    <div className="mb-8">
+                                        <h2 className="text-2xl font-black text-slate-800">Ringkasan Keuangan</h2>
+                                        <p className="text-slate-500 text-sm">Update saldo otomatis PHBI</p>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                                        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden">
+                                            <div className="flex justify-between items-start mb-4">
+                                                <div className="p-3 bg-green-100 text-green-600 rounded-2xl"><Icon name="wallet"/></div>
+                                                <span className="text-[10px] font-black text-green-700 bg-green-100 px-2 py-1 rounded-lg">Tersedia</span>
+                                            </div>
+                                            <p className="text-slate-400 text-xs font-bold uppercase mb-1">Saldo Akhir</p>
+                                            <h3 className="text-3xl font-black text-slate-800 tabular-nums">{formatCurrency(totals.balance)}</h3>
+                                        </div>
+                                        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                                            <div className="p-3 bg-blue-100 text-blue-600 rounded-2xl w-fit mb-4"><Icon name="trending-up"/></div>
+                                            <p className="text-slate-400 text-xs font-bold uppercase mb-1">Total Pemasukan</p>
+                                            <h3 className="text-2xl font-black text-blue-600 tabular-nums">{formatCurrency(totals.in)}</h3>
+                                        </div>
+                                        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                                            <div className="p-3 bg-red-100 text-red-600 rounded-2xl w-fit mb-4"><Icon name="trending-down"/></div>
+                                            <p className="text-slate-400 text-xs font-bold uppercase mb-1">Total Pengeluaran</p>
+                                            <h3 className="text-2xl font-black text-red-600 tabular-nums">{formatCurrency(totals.out)}</h3>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+                                        <h3 className="font-black text-lg text-slate-800 mb-6 flex items-center gap-2">
+                                            <Icon name="zap" className="text-amber-500" /> Transaksi Terbaru
+                                        </h3>
+                                        <div className="space-y-4">
+                                            {transactions.slice(0, 5).map((t, i) => (
+                                                <div key={i} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-transparent">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className={`p-3 rounded-xl ${t.type === 'in' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                            <Icon name={t.type === 'in' ? "plus" : "minus"} size={18}/>
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-extrabold text-sm text-slate-800 leading-tight">{t.description}</p>
+                                                            <p className="text-[10px] text-slate-400 font-black uppercase mt-1">
+                                                                {t.category} • {new Date(t.date).toLocaleDateString('id-ID')}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <p className={`font-black text-sm tabular-nums ${t.type === 'in' ? 'text-green-600' : 'text-red-600'}`}>
+                                                        {t.type === 'in' ? '+' : '-'} {formatCurrency(t.amount).replace('Rp', '')}
+                                                    </p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {view === 'history' && (
+                                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                                    <div className="p-6 border-b flex flex-col md:flex-row gap-4 items-center justify-between">
+                                        <div className="relative w-full max-w-sm">
+                                            <Icon name="search" size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                                            <input type="text" placeholder="Cari keterangan..." className="w-full pl-11 pr-4 py-3 rounded-2xl bg-slate-50 border-none text-sm outline-none font-bold focus:ring-2 ring-green-500 transition-all" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                                        </div>
+                                        <button onClick={() => window.print()} className="w-full md:w-auto px-6 py-3 bg-slate-900 text-white rounded-2xl flex items-center justify-center gap-2 font-black text-xs">
+                                            <Icon name="printer" size={16}/> CETAK LAPORAN
+                                        </button>
+                                    </div>
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-left">
+                                            <thead className="bg-slate-50 text-slate-400 text-[10px] font-black uppercase tracking-wider">
+                                                <tr>
+                                                    <th className="px-6 py-5">Tanggal</th>
+                                                    <th className="px-6 py-5">Deskripsi</th>
+                                                    <th className="px-6 py-5">Kategori</th>
+                                                    <th className="px-6 py-5 text-right">Nominal</th>
+                                                    {isAdmin && <th className="px-6 py-5 text-center">Opsi</th>}
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-100">
+                                                {filteredTransactions.map((t, idx) => (
+                                                    <tr key={idx} className="group hover:bg-slate-50/50">
+                                                        <td className="px-6 py-5 text-xs text-slate-500 font-bold tabular-nums">{t.date ? new Date(t.date).toLocaleDateString("id-ID") : "-"}</td>
+                                                        <td className="px-6 py-5 font-bold text-slate-700 text-sm">{t.description}</td>
+                                                        <td className="px-6 py-5">
+                                                            <span className="px-3 py-1 bg-slate-100 rounded-full text-[9px] font-black uppercase text-slate-500">{t.category}</span>
+                                                        </td>
+                                                        <td className={`px-6 py-5 text-right font-black tabular-nums text-sm ${t.type === 'in' ? 'text-green-600' : 'text-red-600'}`}>
+                                                            {formatCurrency(t.amount)}
+                                                        </td>
+                                                        {isAdmin && (
+                                                            <td className="px-6 py-5 text-center">
+                                                                <div className="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                    <button onClick={() => {setFormData({...t}); setEditingId(t.id); setView('add')}} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg"><Icon name="edit" size={16}/></button>
+                                                                    <button onClick={() => deleteTransaction(t.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg"><Icon name="trash-2" size={16}/></button>
+                                                                </div>
+                                                            </td>
+                                                        )}
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+
+                            {view === 'struktur' && (
+                                <div className="max-w-2xl mx-auto py-10">
+                                    <div className="bg-white p-8 md:p-12 rounded-[40px] border border-slate-200 shadow-xl relative overflow-hidden text-center">
+                                        <Icon name="users" size={80} className="mx-auto mb-6 text-green-700 opacity-20" />
+                                        <h2 className="text-3xl font-black mb-10 text-slate-800 tracking-tight">Kepengurusan PHBI</h2>
+                                        <div className="space-y-6 text-left max-w-sm mx-auto">
+                                            {[
+                                                {label: 'Ketua', name: 'Ust. Fulanuddin'},
+                                                {label: 'Sekretaris', name: 'Ustz. Fulanah'},
+                                                {label: 'Bendahara', name: 'Kang Fulan Arifin'},
+                                                {label: 'Seksi Konsumsi', name: 'Teh Fulanah Azizah'},
+                                                {label: 'Perlengkapan', name: 'Kang Fulan Junior'}
+                                            ].map((item, i) => (
+                                                <div key={i} className="flex justify-between items-center border-b border-slate-100 pb-5">
+                                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{item.label}</span>
+                                                    <span className="font-extrabold text-slate-800">{item.name}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {view === 'add' && isAdmin && (
+                                <div className="max-w-xl mx-auto bg-white p-8 md:p-10 rounded-[32px] border border-slate-200 shadow-2xl">
+                                    <div className="mb-8 flex items-center gap-4">
+                                        <div className="p-4 bg-blue-600 text-white rounded-2xl"><Icon name="edit-3"/></div>
+                                        <h2 className="text-2xl font-black tracking-tight">{editingId ? "Edit Transaksi" : "Tambah Kas Baru"}</h2>
+                                    </div>
+                                    <form onSubmit={handleSubmit} className="space-y-6">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Tipe</label>
+                                                <select className="w-full p-4 border border-slate-200 rounded-2xl bg-slate-50 font-bold focus:border-blue-600 outline-none" value={formData.type} onChange={(e) => setFormData({...formData, type: e.target.value})}>
+                                                    <option value="in">PEMASUKAN (+)</option>
+                                                    <option value="out">PENGELUARAN (-)</option>
+                                                </select>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Kategori</label>
+                                                <select className="w-full p-4 border border-slate-200 rounded-2xl bg-slate-50 font-bold focus:border-blue-600 outline-none" value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})}>
+                                                    {['Donasi', 'Sponsorship', 'Konsumsi', 'Perlengkapan', 'Honor', 'Operasional'].map(cat => <option key={cat} value={cat}>{cat.toUpperCase()}</option>)}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Keterangan</label>
+                                            <input type="text" placeholder="Contoh: Infaq Hamba Allah" required className="w-full p-4 border border-slate-200 rounded-2xl font-bold focus:border-blue-600 outline-none" value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Nominal (Rp)</label>
+                                                <input type="number" required placeholder="0" className="w-full p-4 border border-slate-200 rounded-2xl font-black text-xl focus:border-blue-600 outline-none" value={formData.amount} onChange={(e) => setFormData({...formData, amount: e.target.value})} />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Tanggal</label>
+                                                <input type="date" className="w-full p-4 border border-slate-200 rounded-2xl font-bold focus:border-blue-600 outline-none" value={formData.date} onChange={(e) => setFormData({...formData, date: e.target.value})} />
+                                            </div>
+                                        </div>
+                                        <button type="submit" disabled={loading} className="w-full py-5 bg-slate-900 text-white rounded-2xl font-black tracking-widest flex items-center justify-center gap-2 uppercase text-xs">
+                                            {loading ? <Icon name="loader" className="animate-spin" /> : "Simpan Transaksi"}
+                                        </button>
+                                    </form>
+                                </div>
+                            )}
+                        </main>
+                    </div>
+
+                    {/* Login Modal */}
+                    {showLoginModal && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
+                            <div className="bg-white w-full max-w-sm rounded-[40px] p-10 shadow-2xl relative border border-white/20">
+                                <button onClick={() => setShowLoginModal(false)} className="absolute top-8 right-8 p-2 hover:bg-slate-100 rounded-full">
+                                    <Icon name="x" size={18}/>
+                                </button>
+                                <div className="mb-10 text-center">
+                                    <div className="w-20 h-20 bg-green-100 text-green-700 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                                        <Icon name="shield-check" size={40}/>
+                                    </div>
+                                    <h2 className="text-2xl font-black text-slate-800">Admin Area</h2>
+                                    <p className="text-[10px] text-slate-400 font-black mt-2 uppercase tracking-widest">Login Pengelola</p>
+                                </div>
+                                <form onSubmit={handleLogin} className="space-y-5">
+                                    {loginError && <div className="text-[10px] text-red-500 text-center font-black bg-red-50 py-3 rounded-2xl">{loginError}</div>}
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Username</label>
+                                        <input type="text" placeholder="admin" className="w-full p-4 border border-slate-100 rounded-2xl bg-slate-50 font-bold outline-none text-sm" value={loginData.username} onChange={(e) => setLoginData({...loginData, username: e.target.value})} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Password</label>
+                                        <input type="password" placeholder="••••••••" className="w-full p-4 border border-slate-100 rounded-2xl bg-slate-50 font-bold outline-none text-sm" value={loginData.password} onChange={(e) => setLoginData({...loginData, password: e.target.value})} />
+                                    </div>
+                                    <button className="w-full py-5 bg-green-700 text-white rounded-2xl font-black uppercase text-xs tracking-widest">Masuk</button>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>            const [searchTerm, setSearchTerm] = useState('');
             const [editingId, setEditingId] = useState(null);
             const [loading, setLoading] = useState(false);
             const [transactions, setTransactions] = useState([]);
