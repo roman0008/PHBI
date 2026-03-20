@@ -1,181 +1,242 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kas PHBI MABDA'IL FALAH</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kas PHBI MABDA'IL FALAH</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
 </head>
-
 <body>
+
 <div id="root"></div>
 
 <script type="text/babel">
+
 const { useState, useEffect } = React;
 
+// CONFIG
 const GSHEET_URL = "https://script.google.com/macros/s/AKfycbw488C_jSYN96tRoU9nM-tBbCiqOV1xBAd68uaxa2fn4dQ52_ylzWos1-7YvmtFAQEt/exec";
-const ADMIN_USER = "admin";
-const ADMIN_PASS = "admin123";
-
-const Icon = ({ name, size = 20 }) => (
-    <i data-lucide={name} style={{ width: size, height: size }}></i>
-);
 
 const App = () => {
-    const [view, setView] = useState("dashboard");
-    const [transactions, setTransactions] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [searchTerm, setSearchTerm] = useState("");
 
-    useEffect(() => {
-        fetchData();
-        setTimeout(() => lucide.createIcons(), 500);
-    }, []);
+const [isAdmin, setIsAdmin] = useState(false);
+const [showLogin, setShowLogin] = useState(false);
+const [login, setLogin] = useState({username:"", password:""});
 
-    useEffect(() => {
-        lucide.createIcons();
-    }, [view, transactions]);
+const [view, setView] = useState("dashboard");
+const [transactions, setTransactions] = useState([]);
+const [editingId, setEditingId] = useState(null);
 
-    const fetchData = async () => {
-        setLoading(true);
-        try {
-            const res = await fetch(GSHEET_URL);
-            const data = await res.json();
-            setTransactions(data.sort((a, b) => b.id - a.id));
-        } catch (e) {
-            console.error(e);
-        }
-        setLoading(false);
-    };
+const [form, setForm] = useState({
+description:"",
+amount:"",
+type:"in",
+category:"Donasi",
+date:new Date().toISOString().split("T")[0]
+});
 
-    const formatCurrency = (amount) =>
-        new Intl.NumberFormat("id-ID", {
-            style: "currency",
-            currency: "IDR",
-            minimumFractionDigits: 0
-        }).format(amount || 0);
-
-    const totalIn = transactions.filter(t => t.type === "in").reduce((a, b) => a + Number(b.amount), 0);
-    const totalOut = transactions.filter(t => t.type === "out").reduce((a, b) => a + Number(b.amount), 0);
-    const balance = totalIn - totalOut;
-
-    const filtered = transactions.filter(t =>
-        t.description?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    return (
-        <div className="flex min-h-screen bg-slate-50">
-
-            {/* SIDEBAR */}
-            <aside className="w-64 bg-white border-r hidden lg:block">
-                <div className="p-6 text-center border-b">
-                    <h1 className="font-black text-green-700">MABDA'IL FALAH</h1>
-                </div>
-
-                <nav className="p-4 space-y-2">
-                    <button onClick={()=>setView("dashboard")} className="w-full text-left">Dashboard</button>
-                    <button onClick={()=>setView("history")} className="w-full text-left">Riwayat</button>
-                    <button onClick={()=>setView("struktur")} className="w-full text-left">Kepengurusan</button>
-                </nav>
-            </aside>
-
-            {/* MAIN */}
-            <div className="flex flex-col flex-1">
-
-                <main className="flex-1 p-6">
-
-                    <h2 className="text-2xl font-bold mb-6 uppercase">{view}</h2>
-
-                    {/* DASHBOARD */}
-                    {view === "dashboard" && (
-                        <div className="grid md:grid-cols-3 gap-4">
-                            <div className="bg-green-600 text-white p-4 rounded-xl">
-                                Saldo<br/><b>{formatCurrency(balance)}</b>
-                            </div>
-                            <div className="bg-blue-600 text-white p-4 rounded-xl">
-                                Masuk<br/><b>{formatCurrency(totalIn)}</b>
-                            </div>
-                            <div className="bg-red-600 text-white p-4 rounded-xl">
-                                Keluar<br/><b>{formatCurrency(totalOut)}</b>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* STRUKTUR */}
-                    {view === "struktur" && (
-                        <div className="bg-white p-6 rounded-xl shadow">
-                            <h3 className="font-bold mb-4 text-center">Struktur PHBI</h3>
-                            <div className="space-y-2">
-                                <div>Ketua : -</div>
-                                <div>Wakil : -</div>
-                                <div>Sekretaris : -</div>
-                                <div>Bendahara : -</div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* HISTORY */}
-                    {view === "history" && (
-                        <div className="bg-white rounded-xl shadow">
-
-                            <div className="p-4">
-                                <input
-                                    placeholder="Cari..."
-                                    className="border p-2 w-full"
-                                    onChange={(e)=>setSearchTerm(e.target.value)}
-                                />
-                            </div>
-
-                            <table className="w-full text-sm">
-                                <thead className="bg-gray-100">
-                                    <tr>
-                                        <th className="p-2">Tgl</th>
-                                        <th>Deskripsi</th>
-                                        <th>Kategori</th>
-                                        <th>Nominal</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    {filtered.map((t,i)=>(
-                                        <tr key={i} className="border-t">
-                                            <td className="p-2">
-                                                {t.date
-                                                    ? new Date(t.date).toLocaleDateString("id-ID")
-                                                    : "-"}
-                                            </td>
-                                            <td>{t.description}</td>
-                                            <td>{t.category}</td>
-                                            <td className={t.type==="in"?"text-green-600":"text-red-600"}>
-                                                {formatCurrency(t.amount)}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-
-                </main>
-
-                {/* FOOTER FIXED */}
-                <footer className="bg-white border-t text-center text-xs py-3">
-                    <p className="font-bold">Pondok Pesantren MABDA'IL FALAH</p>
-                    <p>Kp. Tanjakan</p>
-                    <p>© {new Date().getFullYear()}</p>
-                </footer>
-
-            </div>
-        </div>
-    );
+// FETCH DATA
+const fetchData = async () => {
+const res = await fetch(GSHEET_URL);
+const data = await res.json();
+setTransactions(data.sort((a,b)=>b.id-a.id));
 };
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+useEffect(()=>{ fetchData(); },[]);
+
+// SUBMIT
+const submit = async (e)=>{
+e.preventDefault();
+
+await fetch(GSHEET_URL,{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+...form,
+amount:parseFloat(form.amount),
+id:editingId || Date.now(),
+action: editingId ? "edit" : "add"
+})
+});
+
+fetchData();
+setEditingId(null);
+setView("history");
+};
+
+// DELETE
+const del = async(id)=>{
+if(!confirm("Hapus?")) return;
+
+await fetch(GSHEET_URL,{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({action:"delete", id})
+});
+
+fetchData();
+};
+
+// FORMAT
+const rupiah = (n)=> new Intl.NumberFormat("id-ID",{style:"currency",currency:"IDR",minimumFractionDigits:0}).format(n||0);
+
+// TOTAL
+const totalIn = transactions.filter(t=>t.type==="in").reduce((a,b)=>a+Number(b.amount),0);
+const totalOut = transactions.filter(t=>t.type==="out").reduce((a,b)=>a+Number(b.amount),0);
+
+return (
+
+<div className="flex min-h-screen">
+
+{/* SIDEBAR */}
+<div className="w-64 bg-white border-r p-4 flex flex-col justify-between">
+
+<div>
+<h1 className="font-bold text-green-700 text-xl mb-6">PHBI</h1>
+
+<button onClick={()=>setView("dashboard")} className="block w-full text-left py-2">Dashboard</button>
+<button onClick={()=>setView("history")} className="block w-full text-left py-2">History</button>
+<button onClick={()=>setView("struktur")} className="block w-full text-left py-2">Struktur</button>
+
+{isAdmin && <button onClick={()=>setView("add")} className="block w-full text-left py-2">Input</button>}
+</div>
+
+<div>
+{!isAdmin ?
+<button onClick={()=>setShowLogin(true)} className="w-full bg-black text-white py-2 rounded">Login</button>
+:
+<button onClick={()=>setIsAdmin(false)} className="w-full text-red-500">Logout</button>
+}
+</div>
+
+</div>
+
+{/* CONTENT */}
+<div className="flex-1 flex flex-col p-6">
+
+{/* DASHBOARD */}
+{view==="dashboard" &&
+<div className="grid grid-cols-3 gap-4">
+<div className="bg-green-600 text-white p-4 rounded">Saldo<br/>{rupiah(totalIn-totalOut)}</div>
+<div className="bg-blue-500 text-white p-4 rounded">Masuk<br/>{rupiah(totalIn)}</div>
+<div className="bg-red-500 text-white p-4 rounded">Keluar<br/>{rupiah(totalOut)}</div>
+</div>
+}
+
+{/* HISTORY */}
+{view==="history" &&
+<table className="w-full mt-4">
+<thead>
+<tr>
+<th>Tanggal</th>
+<th>Keterangan</th>
+<th>Nominal</th>
+{isAdmin && <th>Aksi</th>}
+</tr>
+</thead>
+<tbody>
+{transactions.map(t=>(
+<tr key={t.id}>
+<td>{t.date ? new Date(t.date).toLocaleDateString("id-ID") : "-"}</td>
+<td>{t.description}</td>
+<td className={t.type==="in"?"text-green-600":"text-red-600"}>
+{rupiah(t.amount)}
+</td>
+
+{isAdmin &&
+<td>
+<button onClick={()=>{setForm(t);setEditingId(t.id);setView("add")}}>Edit</button>
+<button onClick={()=>del(t.id)}>Hapus</button>
+</td>
+}
+
+</tr>
+))}
+</tbody>
+</table>
+}
+
+{/* FORM */}
+{view==="add" && isAdmin &&
+<form onSubmit={submit} className="space-y-3 max-w-md">
+<input placeholder="Keterangan" required className="border p-2 w-full"
+value={form.description}
+onChange={e=>setForm({...form,description:e.target.value})}/>
+
+<input type="number" placeholder="Nominal" required className="border p-2 w-full"
+value={form.amount}
+onChange={e=>setForm({...form,amount:e.target.value})}/>
+
+<input type="date" className="border p-2 w-full"
+value={form.date}
+onChange={e=>setForm({...form,date:e.target.value})}/>
+
+<select value={form.type} onChange={e=>setForm({...form,type:e.target.value})}>
+<option value="in">Masuk</option>
+<option value="out">Keluar</option>
+</select>
+
+<button className="bg-green-600 text-white px-4 py-2 rounded">Simpan</button>
+</form>
+}
+
+{/* STRUKTUR */}
+{view==="struktur" &&
+<div>
+<h2 className="font-bold mb-4">Struktur PHBI</h2>
+<p>Ketua : -</p>
+<p>Sekretaris : -</p>
+<p>Bendahara : -</p>
+</div>
+}
+
+{/* FOOTER */}
+<div className="mt-auto pt-6 text-center text-xs text-gray-500">
+Pondok Pesantren MABDA'IL FALAH<br/>
+Kp. Tanjakan
+</div>
+
+</div>
+
+{/* LOGIN MODAL */}
+{showLogin &&
+<div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+<div className="bg-white p-6 rounded w-80">
+<h2 className="mb-4 font-bold">Login Admin</h2>
+
+<input placeholder="Username" className="border p-2 w-full mb-2"
+onChange={e=>setLogin({...login,username:e.target.value})}/>
+
+<input type="password" placeholder="Password" className="border p-2 w-full mb-4"
+onChange={e=>setLogin({...login,password:e.target.value})}/>
+
+<button className="w-full bg-green-600 text-white py-2"
+onClick={()=>{
+if(login.username==="admin" && login.password==="admin123"){
+setIsAdmin(true);
+setShowLogin(false);
+}else{
+alert("Login salah");
+}
+}}>
+Login
+</button>
+
+</div>
+</div>
+}
+
+</div>
+);
+};
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+
 </script>
 
 </body>
