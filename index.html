@@ -104,9 +104,12 @@
                 try {
                     await fetch(GSHEET_URL, {
                         method: 'POST',
-                        mode: 'no-cors', // Penting untuk Apps Script doPost
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
                         body: JSON.stringify(payload)
                     });
+                    
                     
                     // Tunggu sebentar lalu refresh data
                     setTimeout(async () => {
