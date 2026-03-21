@@ -38,7 +38,7 @@
         }
 
         @keyframes marquee {
-            0 { transform: translateX(100%); }
+            0% { transform: translateX(100%); }
             100% { transform: translateX(-100%); }
         }
 
@@ -54,6 +54,10 @@
             vertical-align: middle;
         }
 
+        .gallery-card:hover img {
+            transform: scale(1.05);
+        }
+
         @media print {
             .no-print { display: none !important; }
             main { margin: 0 !important; padding: 0 !important; }
@@ -66,7 +70,7 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo, useCallback } = React;
         
-        const GSHEET_URL = "https://script.google.com/macros/s/AKfycbw488C_jSYN96tRoU9nM-tBbCiqOV1xBAd68uaxa2fn4dQ52_ylzWos1-7YvmtFAQEt/exec"; 
+        const GSHEET_URL = "https://script.google.com/macros/s/AKfycbwNGgbR7iGAk29ujfUjFCfr6V23KAQx2rpOrW1foyL7LzQO3815RyAm6Y9o5ZF4Kfcq/exec"; 
         const ADMIN_USER = "mabdail_admin";
         const ADMIN_PASS = "Mabda2026!PHBI";
 
@@ -83,12 +87,24 @@
             const [transactions, setTransactions] = useState([]);
             const [currentTime, setCurrentTime] = useState(new Date());
 
+            // State for Gallery (Mock Data)
+            const [galleryItems, setGalleryItems] = useState([
+                { id: 1, title: 'Maulid Nabi 2025', date: '2025-09-12', url: 'https://images.unsplash.com/photo-1542810634-71277d95dcbb?auto=format&fit=crop&w=800' },
+                { id: 2, title: 'Santunan Anak Yatim', date: '2025-10-05', url: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=800' }
+            ]);
+
             const [formData, setFormData] = useState({
                 description: '',
                 amount: '',
                 type: 'in',
                 category: 'Donasi',
                 date: new Date().toISOString().split('T')[0]
+            });
+
+            const [galleryFormData, setGalleryFormData] = useState({
+                title: '',
+                date: new Date().toISOString().split('T')[0],
+                imageUrl: ''
             });
 
             const refreshIcons = useCallback(() => {
@@ -152,6 +168,17 @@
                 }
             };
 
+            const handleGallerySubmit = (e) => {
+                e.preventDefault();
+                const newItem = {
+                    id: Date.now(),
+                    ...galleryFormData
+                };
+                setGalleryItems([newItem, ...galleryItems]);
+                setGalleryFormData({ title: '', date: new Date().toISOString().split('T')[0], imageUrl: '' });
+                setView('galeri');
+            };
+
             const totals = useMemo(() => {
                 const tin = transactions.filter(t => t.type === 'in').reduce((acc, curr) => acc + Number(curr.amount), 0);
                 const tout = transactions.filter(t => t.type === 'out').reduce((acc, curr) => acc + Number(curr.amount), 0);
@@ -164,6 +191,24 @@
 
             const filteredTransactions = transactions.filter(t => t.description?.toString().toLowerCase().includes(searchTerm.toLowerCase()));
 
+            const NavButton = ({ targetView, icon, label, isAdminOnly = false, isAction = false }) => {
+                if (isAdminOnly && !isAdmin) return null;
+                
+                const isActive = view === targetView;
+                const baseClass = "w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm transition-all ";
+                const activeClass = isAction ? "bg-blue-600 text-white" : "bg-green-700 text-white shadow-lg";
+                const inactiveClass = isAction ? "text-blue-600 bg-blue-50 hover:bg-blue-100" : "text-slate-500 hover:bg-slate-50";
+
+                return (
+                    <button 
+                        onClick={() => {setView(targetView); setSidebarOpen(false)}} 
+                        className={`${baseClass} ${isActive ? activeClass : inactiveClass}`}
+                    >
+                        <i data-lucide={icon} className="w-5 h-5"></i> {label}
+                    </button>
+                );
+            };
+
             return (
                 <div className="flex flex-col min-h-screen">
                     {/* Header */}
@@ -174,7 +219,7 @@
                             </button>
                             <div>
                                 <h1 className="text-base md:text-lg font-extrabold text-green-800 leading-none">MABDA'IL FALAH</h1>
-                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Digital Kas PHBI</p>
+                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Digital Kas & Galeri PHBI</p>
                             </div>
                         </div>
                         <div className="text-right">
@@ -186,7 +231,7 @@
                     {/* Banner Berjalan */}
                     <div className="no-print marquee-container">
                         <div className="marquee-content">
-                            <span className="mx-8">Selamat Datang di Portal Keuangan PHBI Mabda'il Falah Tangerang</span>
+                            <span className="mx-8">Selamat Datang di Portal Keuangan & Galeri PHBI Mabda'il Falah Tangerang</span>
                             <span className="mx-8">•</span>
                             <span className="mx-8">Saldo Saat Ini: {formatCurrency(totals.balance)}</span>
                             <span className="mx-8">•</span>
@@ -201,21 +246,18 @@
                                 <span className="font-black text-xs text-green-700 uppercase tracking-widest">Menu Utama</span>
                                 <button onClick={() => setSidebarOpen(false)}><i data-lucide="x" className="w-5 h-5"></i></button>
                             </div>
-                            <div className="p-4 space-y-2">
-                                <button onClick={() => {setView('dashboard'); setSidebarOpen(false)}} className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm ${view === 'dashboard' ? 'bg-green-700 text-white shadow-lg' : 'text-slate-500 hover:bg-slate-50'}`}>
-                                    <i data-lucide="layout-grid" className="w-5 h-5"></i> Dashboard
-                                </button>
-                                <button onClick={() => {setView('history'); setSidebarOpen(false)}} className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm ${view === 'history' ? 'bg-green-700 text-white shadow-lg' : 'text-slate-500 hover:bg-slate-50'}`}>
-                                    <i data-lucide="list" className="w-5 h-5"></i> Riwayat Transaksi
-                                </button>
-                                <button onClick={() => {setView('struktur'); setSidebarOpen(false)}} className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm ${view === 'struktur' ? 'bg-green-700 text-white shadow-lg' : 'text-slate-500 hover:bg-slate-50'}`}>
-                                    <i data-lucide="users" className="w-5 h-5"></i> Kepengurusan
-                                </button>
+                            <div className="p-4 space-y-1">
+                                <NavButton targetView="dashboard" icon="layout-grid" label="Dashboard" />
+                                <NavButton targetView="history" icon="list" label="Riwayat Kas" />
+                                <NavButton targetView="galeri" icon="image" label="Galeri Kegiatan" />
+                                <NavButton targetView="struktur" icon="users" label="Kepengurusan" />
+                                <NavButton targetView="kontak" icon="phone-call" label="Kontak Kami" />
+                                
                                 {isAdmin && (
-                                    <div className="pt-4 mt-4 border-t border-slate-100">
-                                        <button onClick={() => {setView('add'); setSidebarOpen(false)}} className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm ${view === 'add' ? 'bg-blue-600 text-white' : 'text-blue-600 bg-blue-50'}`}>
-                                            <i data-lucide="plus-circle" className="w-5 h-5"></i> {editingId ? 'Edit Data' : 'Input Baru'}
-                                        </button>
+                                    <div className="pt-4 mt-4 border-t border-slate-100 space-y-2">
+                                        <p className="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Panel Admin</p>
+                                        <NavButton targetView="add" icon="plus-circle" label="Input Transaksi" isAction />
+                                        <NavButton targetView="input-konten" icon="upload-cloud" label="Input Galeri" isAction />
                                     </div>
                                 )}
                             </div>
@@ -277,9 +319,9 @@
                                 {view === 'history' && (
                                     <div className="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden">
                                         <div className="p-6 border-b flex flex-col md:flex-row gap-4 items-center justify-between">
-                                            <div className="relative w-full max-w-sm">
+                                            <div className="relative w-full max-sm:max-w-none max-w-sm">
                                                 <i data-lucide="search" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4"></i>
-                                                <input type="text" placeholder="Cari data..." className="w-full pl-11 pr-4 py-3 bg-slate-50 rounded-2xl text-sm font-bold outline-none" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                                                <input type="text" placeholder="Cari riwayat..." className="w-full pl-11 pr-4 py-3 bg-slate-50 rounded-2xl text-sm font-bold outline-none" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                                             </div>
                                             <button onClick={() => window.print()} className="px-6 py-3 bg-slate-900 text-white rounded-2xl font-black text-xs flex items-center gap-2"><i data-lucide="printer" className="w-4 h-4"></i> CETAK</button>
                                         </div>
@@ -302,8 +344,89 @@
                                     </div>
                                 )}
 
+                                {view === 'galeri' && (
+                                    <div className="max-w-6xl mx-auto">
+                                        <div className="flex items-center justify-between mb-8">
+                                            <h2 className="text-2xl font-black text-slate-800">Galeri Kegiatan</h2>
+                                            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{galleryItems.length} Album</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                            {galleryItems.map((item) => (
+                                                <div key={item.id} className="gallery-card bg-white rounded-[32px] overflow-hidden border border-slate-100 shadow-sm group cursor-pointer">
+                                                    <div className="relative h-56 overflow-hidden">
+                                                        <img src={item.url} alt={item.title} className="w-full h-full object-cover transition-transform duration-700" />
+                                                        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl text-[10px] font-black text-green-800 uppercase shadow-sm">
+                                                            {new Date(item.date).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
+                                                        </div>
+                                                    </div>
+                                                    <div className="p-6">
+                                                        <h4 className="font-extrabold text-slate-800 mb-2 group-hover:text-green-700 transition-colors">{item.title}</h4>
+                                                        <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
+                                                            <i data-lucide="calendar" className="w-3 h-3"></i> Tgl: {item.date}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {view === 'kontak' && (
+                                    <div className="max-w-2xl mx-auto py-10">
+                                        <div className="bg-white rounded-[40px] border border-slate-100 p-10 shadow-xl text-center">
+                                            <div className="w-20 h-20 bg-green-100 text-green-700 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                                                <i data-lucide="phone-call" className="w-10 h-10"></i>
+                                            </div>
+                                            <h2 className="text-2xl font-black text-slate-800 mb-2">Hubungi Kami</h2>
+                                            <p className="text-slate-500 font-bold mb-10 text-sm">Punya pertanyaan atau ingin berdonasi secara offline?</p>
+                                            
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
+                                                <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">WhatsApp Official</p>
+                                                    <p className="font-black text-lg text-slate-800">+62 812-3456-7890</p>
+                                                </div>
+                                                <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Email Media</p>
+                                                    <p className="font-black text-lg text-slate-800">info@mabdailfalah.com</p>
+                                                </div>
+                                                <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 md:col-span-2">
+                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Alamat Fisik</p>
+                                                    <p className="font-extrabold text-slate-800">Kp. Tanjakan RT. 009/002 Desa Tanjakan, Kec. Rajeg, Tangerang, Banten 15510</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {view === 'input-konten' && isAdmin && (
+                                    <div className="max-w-xl mx-auto bg-white p-8 rounded-[40px] border border-slate-100 shadow-xl">
+                                        <div className="flex items-center gap-4 mb-8">
+                                            <div className="w-12 h-12 bg-blue-100 text-blue-700 rounded-2xl flex items-center justify-center"><i data-lucide="upload-cloud"></i></div>
+                                            <div>
+                                                <h2 className="text-xl font-black text-slate-800 leading-none">Input Galeri</h2>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">Tambahkan Album Kegiatan Baru</p>
+                                            </div>
+                                        </div>
+                                        <form onSubmit={handleGallerySubmit} className="space-y-6">
+                                            <div>
+                                                <label className="text-[10px] font-black text-slate-400 uppercase ml-4 mb-2 block tracking-widest">Judul Kegiatan</label>
+                                                <input type="text" required placeholder="Contoh: PHBI Isra Mi'raj 1447H" className="w-full p-4 bg-slate-50 rounded-2xl font-bold border-none outline-none focus:ring-2 ring-blue-500" value={galleryFormData.title} onChange={(e) => setGalleryFormData({...galleryFormData, title: e.target.value})} />
+                                            </div>
+                                            <div>
+                                                <label className="text-[10px] font-black text-slate-400 uppercase ml-4 mb-2 block tracking-widest">URL Gambar (Link)</label>
+                                                <input type="url" required placeholder="https://domain.com/gambar.jpg" className="w-full p-4 bg-slate-50 rounded-2xl font-bold border-none outline-none focus:ring-2 ring-blue-500" value={galleryFormData.imageUrl} onChange={(e) => setGalleryFormData({...galleryFormData, imageUrl: e.target.value})} />
+                                            </div>
+                                            <div>
+                                                <label className="text-[10px] font-black text-slate-400 uppercase ml-4 mb-2 block tracking-widest">Tanggal Kegiatan</label>
+                                                <input type="date" required className="w-full p-4 bg-slate-50 rounded-2xl font-bold border-none outline-none focus:ring-2 ring-blue-500" value={galleryFormData.date} onChange={(e) => setGalleryFormData({...galleryFormData, date: e.target.value})} />
+                                            </div>
+                                            <button type="submit" className="w-full py-5 bg-blue-600 text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg shadow-blue-200">Terbitkan Ke Galeri</button>
+                                        </form>
+                                    </div>
+                                )}
+
                                 {view === 'struktur' && (
-                                    <div className="max-w-2xl mx-auto py-10 bg-white rounded-[40px] border border-slate-100 p-10 text-center">
+                                    <div className="max-w-2xl mx-auto py-10 bg-white rounded-[40px] border border-slate-100 p-10 text-center shadow-sm">
                                         <h2 className="text-2xl font-black text-slate-800 mb-8">Struktur Pengelola PHBI</h2>
                                         <div className="space-y-6 text-left">
                                             {[{role: 'Ketua Pelaksana', name: 'Ust. Fulanuddin'}, {role: 'Bendahara', name: 'Kang Fulan Arifin'}, {role: 'Sekretaris', name: 'Ustz. Fulanah'}].map((p, i) => (
@@ -318,7 +441,7 @@
 
                                 {view === 'add' && isAdmin && (
                                     <div className="max-w-xl mx-auto bg-white p-8 rounded-[40px] border border-slate-100 shadow-xl">
-                                        <h2 className="text-2xl font-black text-slate-800 mb-8">Input Transaksi</h2>
+                                        <h2 className="text-2xl font-black text-slate-800 mb-8">Input Transaksi Kas</h2>
                                         <form onSubmit={handleSubmit} className="space-y-6">
                                             <div className="grid grid-cols-2 gap-4">
                                                 <select className="w-full p-4 bg-slate-50 rounded-2xl font-bold border-none outline-none" value={formData.type} onChange={(e) => setFormData({...formData, type: e.target.value})}>
@@ -336,7 +459,6 @@
                                 )}
                             </main>
 
-                            {/* FOOTER BARU */}
                             <footer className="no-print bg-white border-t border-slate-100 mt-auto">
                                 <div className="max-w-6xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
                                     <div className="space-y-4">
