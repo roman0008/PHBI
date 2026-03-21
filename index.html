@@ -70,7 +70,8 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo, useCallback } = React;
         
-        const GSHEET_URL = "https://script.google.com/macros/s/AKfycbwNGgbR7iGAk29ujfUjFCfr6V23KAQx2rpOrW1foyL7LzQO3815RyAm6Y9o5ZF4Kfcq/exec"; 
+        // Sesuaikan dengan URL Apps Script Anda
+        const GSHEET_URL = "https://script.google.com/macros/s/AKfycbyA4g8Lcj-LPFkBCtVaoP_Q8vf6vyhQS5DDBbKrIASZugTWcN-UwX4S5g3AwBao8MnT/exec"; 
         const ADMIN_USER = "mabdail_admin";
         const ADMIN_PASS = "Mabda2026!PHBI";
 
@@ -85,13 +86,8 @@
             const [editingId, setEditingId] = useState(null);
             const [loading, setLoading] = useState(false);
             const [transactions, setTransactions] = useState([]);
+            const [galleryItems, setGalleryItems] = useState([]);
             const [currentTime, setCurrentTime] = useState(new Date());
-
-            // State for Gallery (Mock Data)
-            const [galleryItems, setGalleryItems] = useState([
-                { id: 1, title: 'Maulid Nabi 2025', date: '2025-09-12', url: 'https://images.unsplash.com/photo-1542810634-71277d95dcbb?auto=format&fit=crop&w=800' },
-                { id: 2, title: 'Santunan Anak Yatim', date: '2025-10-05', url: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=800' }
-            ]);
 
             const [formData, setFormData] = useState({
                 description: '',
@@ -115,24 +111,35 @@
 
             useEffect(() => {
                 refreshIcons();
-            }, [view, isAdmin, showLoginModal, transactions, sidebarOpen, refreshIcons]);
+            }, [view, isAdmin, showLoginModal, transactions, galleryItems, sidebarOpen, refreshIcons]);
 
             useEffect(() => {
                 const timer = setInterval(() => setCurrentTime(new Date()), 1000);
                 fetchData();
+                fetchGallery();
                 return () => clearInterval(timer);
             }, []);
 
             const fetchData = async () => {
                 setLoading(true);
                 try {
-                    const response = await fetch(GSHEET_URL);
+                    const response = await fetch(`${GSHEET_URL}?sheet=Sheet1`);
                     const data = await response.json();
-                    setTransactions(data.sort((a, b) => b.id - a.id));
+                    setTransactions(Array.isArray(data) ? data.sort((a, b) => b.id - a.id) : []);
                 } catch (error) {
-                    console.error("Gagal ambil data:", error);
+                    console.error("Gagal ambil data transaksi:", error);
                 } finally {
                     setLoading(false);
+                }
+            };
+
+            const fetchGallery = async () => {
+                try {
+                    const response = await fetch(`${GSHEET_URL}?sheet=galeri`);
+                    const data = await response.json();
+                    setGalleryItems(Array.isArray(data) ? data.sort((a, b) => b.id - a.id) : []);
+                } catch (error) {
+                    console.error("Gagal ambil data galeri:", error);
                 }
             };
 
@@ -152,7 +159,13 @@
                 e.preventDefault();
                 if (loading) return;
                 setLoading(true);
-                const payload = { ...formData, amount: parseFloat(formData.amount), id: editingId || Date.now(), action: editingId ? 'edit' : 'add' };
+                const payload = { 
+                    ...formData, 
+                    amount: parseFloat(formData.amount), 
+                    id: editingId || Date.now(), 
+                    action: editingId ? 'edit' : 'add',
+                    isGallery: false 
+                };
                 try {
                     await fetch(GSHEET_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(payload) });
                     setTimeout(() => {
@@ -168,15 +181,32 @@
                 }
             };
 
-            const handleGallerySubmit = (e) => {
+            const handleGallerySubmit = async (e) => {
                 e.preventDefault();
-                const newItem = {
+                if (loading) return;
+                setLoading(true);
+
+                const payload = {
                     id: Date.now(),
-                    ...galleryFormData
+                    tanggal: galleryFormData.date,
+                    judul: galleryFormData.title,
+                    imageUrl: galleryFormData.imageUrl,
+                    isGallery: true,
+                    action: 'add'
                 };
-                setGalleryItems([newItem, ...galleryItems]);
-                setGalleryFormData({ title: '', date: new Date().toISOString().split('T')[0], imageUrl: '' });
-                setView('galeri');
+
+                try {
+                    await fetch(GSHEET_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(payload) });
+                    setTimeout(() => {
+                        fetchGallery();
+                        setGalleryFormData({ title: '', date: new Date().toISOString().split('T')[0], imageUrl: '' });
+                        setView('galeri');
+                        setLoading(false);
+                    }, 1500);
+                } catch (err) {
+                    console.error("Gallery submit error:", err);
+                    setLoading(false);
+                }
             };
 
             const totals = useMemo(() => {
@@ -351,22 +381,29 @@
                                             <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{galleryItems.length} Album</span>
                                         </div>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                            {galleryItems.map((item) => (
-                                                <div key={item.id} className="gallery-card bg-white rounded-[32px] overflow-hidden border border-slate-100 shadow-sm group cursor-pointer">
-                                                    <div className="relative h-56 overflow-hidden">
-                                                        <img src={item.url} alt={item.title} className="w-full h-full object-cover transition-transform duration-700" />
-                                                        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl text-[10px] font-black text-green-800 uppercase shadow-sm">
-                                                            {new Date(item.date).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
-                                                        </div>
-                                                    </div>
-                                                    <div className="p-6">
-                                                        <h4 className="font-extrabold text-slate-800 mb-2 group-hover:text-green-700 transition-colors">{item.title}</h4>
-                                                        <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
-                                                            <i data-lucide="calendar" className="w-3 h-3"></i> Tgl: {item.date}
-                                                        </div>
-                                                    </div>
+                                            {galleryItems.length === 0 ? (
+                                                <div className="col-span-full py-20 text-center">
+                                                    <i data-lucide="image-off" className="w-12 h-12 text-slate-300 mx-auto mb-4"></i>
+                                                    <p className="font-bold text-slate-400">Belum ada foto kegiatan.</p>
                                                 </div>
-                                            ))}
+                                            ) : (
+                                                galleryItems.map((item) => (
+                                                    <div key={item.id} className="gallery-card bg-white rounded-[32px] overflow-hidden border border-slate-100 shadow-sm group cursor-pointer">
+                                                        <div className="relative h-56 overflow-hidden">
+                                                            <img src={item.imageUrl} alt={item.judul} className="w-full h-full object-cover transition-transform duration-700" />
+                                                            <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl text-[10px] font-black text-green-800 uppercase shadow-sm">
+                                                                {new Date(item.tanggal).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
+                                                            </div>
+                                                        </div>
+                                                        <div className="p-6">
+                                                            <h4 className="font-extrabold text-slate-800 mb-2 group-hover:text-green-700 transition-colors">{item.judul}</h4>
+                                                            <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
+                                                                <i data-lucide="calendar" className="w-3 h-3"></i> Tgl: {item.tanggal}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            )}
                                         </div>
                                     </div>
                                 )}
@@ -420,7 +457,9 @@
                                                 <label className="text-[10px] font-black text-slate-400 uppercase ml-4 mb-2 block tracking-widest">Tanggal Kegiatan</label>
                                                 <input type="date" required className="w-full p-4 bg-slate-50 rounded-2xl font-bold border-none outline-none focus:ring-2 ring-blue-500" value={galleryFormData.date} onChange={(e) => setGalleryFormData({...galleryFormData, date: e.target.value})} />
                                             </div>
-                                            <button type="submit" className="w-full py-5 bg-blue-600 text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg shadow-blue-200">Terbitkan Ke Galeri</button>
+                                            <button type="submit" disabled={loading} className="w-full py-5 bg-blue-600 text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg shadow-blue-200 disabled:opacity-50">
+                                                {loading ? 'Mengunggah...' : 'Terbitkan Ke Galeri'}
+                                            </button>
                                         </form>
                                     </div>
                                 )}
