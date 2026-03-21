@@ -3,607 +3,657 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="google-site-verification" content="ubH5sTypjnfkqZuLIJIIhGC0g_WOG2X84iESlRDmrEs" />
-    <title>Kas & Pengurus PHBI MABDA'IL FALAH</title>
-    <meta name="description" content="Website resmi laporan kas dan pengurus PHBI Mabda'il Falah Tangerang. Transparansi keuangan, dokumentasi kegiatan, dan informasi pengurus.">
-    <meta name="keywords" content="kas masjid, PHBI, Mabdail Falah, laporan keuangan pesantren, Tangerang">
-    <meta name="author" content="PHBI Mabda'il Falah">
-
-    <meta property="og:title" content="Kas PHBI Mabda'il Falah">
-    <meta property="og:description" content="Laporan kas dan kegiatan PHBI Mabda'il Falah">
-    <meta property="og:type" content="website">
-    
+    <title>Pondok Pesantren Mabda'il Falah</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            margin: 0;
+            padding: 0;
             overflow-x: hidden;
-            -webkit-tap-highlight-color: transparent;
         }
 
-        .marquee-container {
-            width: 100%;
-            overflow: hidden;
-            background: #15803d;
+        .hero-gradient {
+            background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .nav-link-active {
+            color: #065f46;
+            border-bottom: 2px solid #065f46;
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #059669;
+            border-radius: 10px;
+        }
+
+        .bg-grid {
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        .profile-card:hover .profile-img {
+            transform: scale(1.05);
+        }
+
+        .admin-tab-active {
+            background-color: #064e3b;
             color: white;
-            padding: 8px 0;
-            display: flex;
+            box-shadow: 0 10px 15px -3px rgba(6, 78, 59, 0.2);
         }
 
-        .marquee-content {
-            display: inline-block;
-            white-space: nowrap;
-            animation: marquee 30s linear infinite;
-            font-weight: 800;
-            font-size: 0.65rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
+        .logout-btn:hover {
+            background-color: #fee2e2;
+            color: #ef4444;
         }
+
+        .text-income { color: #059669; }
+        .text-expense { color: #dc2626; }
 
         @keyframes marquee {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
-        }
-
-        .glass-header {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-        }
-
-        .active-nav {
-            background: #15803d !important;
-            color: white !important;
-            box-shadow: 0 10px 15px -3px rgba(21, 128, 61, 0.2);
-        }
-
-        .active-admin {
-            background: #1e293b !important;
-            color: white !important;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #e2e8f0;
-            border-radius: 10px;
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
         }
     </style>
 </head>
-<body class="bg-[#FBFCFE] text-slate-900 text-left">
+<body>
     <div id="root"></div>
-    <noscript>
-  <h1>Kas PHBI Mabda'il Falah</h1>
-  <p>Website ini berisi laporan kas, pengurus, dan dokumentasi kegiatan PHBI Mabda'il Falah di Tangerang.</p>
-</noscript>
+
     <script type="text/babel">
-        const { useState, useEffect, useMemo, useCallback } = React;
-        
+        const { useState, useEffect, useMemo } = React;
+
         const GSHEET_URL = "https://script.google.com/macros/s/AKfycbyjQjA3aja6XbLWKChoJ4FrO0O8Tt3t9zbdk7Qx1tNfrP9J66UJaKWVmzEB90OQR-Hg/exec"; 
         const ADMIN_USER = "mabdail_admin";
         const ADMIN_PASS = "Mabda2026!PHBI";
-        
-        const CONTACT_INFO = {
-            whatsapp: "6281234567890",
-            email: "phbi@mabdailfalah.com",
-            address: "Kp. Tanjakan RT/RW 09/02, Desa Tanjakan, Kec. Rajeg, Tangerang, Banten 15540"
-        };
-
-        const KATEGORI_KAS = [
-            "Infaq",
-            "Shadaqah",
-            "Donatur Tetap",
-            "Operasional",
-            "Peralatan",
-            "Konsumsi",
-            "Transport",
-            "Lain-lain"
-        ];
 
         const App = () => {
+            const [view, setView] = useState('beranda'); 
             const [isAdmin, setIsAdmin] = useState(false);
-            const [showLoginModal, setShowLoginModal] = useState(false);
-            const [showEditModal, setShowEditModal] = useState(false);
+            const [showLogin, setShowLogin] = useState(false);
+            const [isMenuOpen, setIsMenuOpen] = useState(false);
             const [showPassword, setShowPassword] = useState(false);
-            const [loginData, setLoginData] = useState({ username: '', password: '' });
-            const [editItem, setEditItem] = useState(null);
-            const [view, setView] = useState('dashboard');
-            const [sidebarOpen, setSidebarOpen] = useState(false);
-            const [loading, setLoading] = useState(false);
+            const [currentTime, setCurrentTime] = useState(new Date());
             
             const [transactions, setTransactions] = useState([]);
-            const [galleryItems, setGalleryItems] = useState([]);
-            const [pengurusList, setPengurusList] = useState([]);
-            const [currentTime, setCurrentTime] = useState(new Date());
+            const [gallery, setGallery] = useState([]);
+            const [pengurus, setPengurus] = useState([]);
+            const [infoIndex, setInfoIndex] = useState(0);
+            const [isLoading, setIsLoading] = useState(false);
 
-            const refreshIcons = useCallback(() => {
-                if (window.lucide) window.lucide.createIcons();
-            }, []);
+            const [adminTab, setAdminTab] = useState('kas'); 
+            const [editingId, setEditingId] = useState(null);
+            const [formData, setFormData] = useState({});
+
+            const infoHighlights = useMemo(() => [
+                { icon: 'info', text: "Selamat Datang di Portal Resmi Mabda'il Falah" },
+                { icon: 'map-pin', text: "Kp. Tanjakan Rajeg, Tangerang, Banten" },
+                { icon: 'graduation-cap', text: "Penerimaan Santri Baru (PSB) 2026/2027 Telah Dibuka" },
+                { icon: 'megaphone', text: "Ayo Berinfaq untuk Pembangunan Fasilitas Santri" },
+                { icon: 'shield-check', text: "Menjaga Tradisi, Membangun Generasi Qur'ani" }
+            ], []);
 
             useEffect(() => {
-                refreshIcons();
-            }, [view, isAdmin, showLoginModal, showEditModal, sidebarOpen, transactions, pengurusList, galleryItems, refreshIcons]);
-
-            useEffect(() => {
-                const timer = setInterval(() => setCurrentTime(new Date()), 1000);
                 fetchAllData();
-                return () => clearInterval(timer);
-            }, []);
+                const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+                const infoTimer = setInterval(() => {
+                    setInfoIndex((prev) => (prev + 1) % infoHighlights.length);
+                }, 5000);
+
+                return () => {
+                    clearInterval(timer);
+                    clearInterval(infoTimer);
+                };
+            }, [infoHighlights]);
+
+            useEffect(() => {
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                }
+            }, [view, showLogin, isAdmin, isMenuOpen, infoIndex, isLoading, pengurus, adminTab, editingId, showPassword, transactions, currentTime]);
 
             const fetchAllData = async () => {
-                setLoading(true);
+                setIsLoading(true);
                 try {
-                    const [resTrans, resGal, resPeng] = await Promise.all([
+                    const [resKas, resGal, resPeng] = await Promise.all([
                         fetch(`${GSHEET_URL}?sheet=Sheet1`),
                         fetch(`${GSHEET_URL}?sheet=galeri`),
                         fetch(`${GSHEET_URL}?sheet=pengurus`)
                     ]);
                     
-                    const dataTrans = await resTrans.json();
-                    const dataGal = await resGal.json();
-                    const dataPeng = await resPeng.json();
+                    const dKas = await resKas.json();
+                    const dGal = await resGal.json();
+                    const dPeng = await resPeng.json();
 
-                    setTransactions(Array.isArray(dataTrans) ? dataTrans.sort((a, b) => b.id - a.id) : []);
-                    setGalleryItems(Array.isArray(dataGal) ? dataGal.sort((a, b) => b.id - a.id) : []);
-                    setPengurusList(Array.isArray(dataPeng) ? dataPeng : []);
-                } catch (error) {
-                    console.error("Fetch error:", error);
-                } finally {
-                    setLoading(false);
+                    setTransactions(Array.isArray(dKas) ? dKas : []);
+                    setGallery(Array.isArray(dGal) ? dGal : []);
+                    setPengurus(Array.isArray(dPeng) ? dPeng : []);
+                } catch (e) {
+                    console.error("Fetch failed", e);
                 }
+                setIsLoading(false);
             };
 
-            const handleSubmitAction = async (e) => {
-                e.preventDefault();
-                setLoading(true);
-                const formData = new FormData(e.target);
-                const isEdit = formData.get('action_type') === 'update';
-                
-                let payload = { action: isEdit ? 'edit' : 'insert', data: {} };
+            const handleCrudAction = async (action, sheetName, data = null) => {
+                setIsLoading(true);
+                const payload = {
+                    action: action,
+                    sheet: sheetName,
+                    data: data || formData
+                };
 
                 try {
-                    const currentType = editItem?._type || (view.includes('kas') ? 'kas' : view.includes('galeri') ? 'galeri' : 'pengurus');
-                    
-                    if (currentType === 'kas') {
-                        payload.sheet = 'Sheet1';
-                        payload.data = {
-                            id: isEdit ? formData.get('id') : Date.now().toString(),
-                            date: isEdit ? formData.get('date') : new Date().toLocaleDateString('id-ID'),
-                            description: formData.get('description'),
-                            category: formData.get('category'),
-                            type: formData.get('type'),
-                            amount: Number(formData.get('amount'))
-                        };
-                    } else if (currentType === 'pengurus') {
-                        payload.sheet = 'pengurus';
-                        payload.action = isEdit ? 'edit_pengurus' : 'insert';
-                        payload.data = {
-                            id: isEdit ? formData.get('id') : Date.now().toString(),
-                            nama: formData.get('nama'),
-                            sebagai: formData.get('sebagai'),
-                            kontak: formData.get('kontak') || ""
-                        };
-                    } else if (currentType === 'galeri') {
-                        payload.sheet = 'galeri';
-                        payload.data = {
-                            id: isEdit ? formData.get('id') : Date.now().toString(),
-                            tanggal: formData.get('tanggal') || new Date().toLocaleDateString('id-ID'),
-                            judul: formData.get('judul'),
-                            imageUrl: formData.get('imageUrl')
-                        };
-                    }
-
-                    const response = await fetch(GSHEET_URL, {
+                    const res = await fetch(GSHEET_URL, {
                         method: 'POST',
                         body: JSON.stringify(payload)
                     });
-
-                    if (response.ok) {
-                        setShowEditModal(false);
-                        setEditItem(null);
-                        fetchAllData();
-                        setView(view.replace('add-', ''));
-                    }
-                } catch (error) {
-                    alert("Gagal memproses data.");
-                } finally {
-                    setLoading(false);
+                    await fetchAllData();
+                    setEditingId(null);
+                    setFormData({});
+                } catch (e) {
+                    console.error("CRUD Action failed", e);
                 }
+                setIsLoading(false);
             };
 
-            const handleDelete = async (id, sheet) => {
-                if (!confirm(`Hapus data ini secara permanen?`)) return;
-                setLoading(true);
-                try {
-                    const response = await fetch(GSHEET_URL, {
-                        method: 'POST',
-                        body: JSON.stringify({ action: "delete", id: id, sheet: sheet })
-                    });
-                    if (response.ok) fetchAllData();
-                } catch (error) {
-                    alert("Gagal menghapus data.");
-                } finally {
-                    setLoading(false);
-                }
+            const formatRupiah = (number) => {
+                return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(number);
             };
 
-            const openEdit = (item, type) => {
-                setEditItem({...item, _type: type});
-                setShowEditModal(true);
+            const formatShortDate = (date) => {
+                const dayNames = ["MIN", "SEN", "SEL", "RAB", "KAM", "JUM", "SAB"];
+                const d = String(date.getDate()).padStart(2, '0');
+                const m = String(date.getMonth() + 1).padStart(2, '0');
+                const y = String(date.getFullYear()).slice(-2);
+                const dayName = dayNames[date.getDay()];
+                return `${dayName}, ${d}:${m}:${y}`;
             };
 
-            const handleLogin = (e) => {
-                e.preventDefault();
-                if (loginData.username === ADMIN_USER && loginData.password === ADMIN_PASS) {
-                    setIsAdmin(true);
-                    setShowLoginModal(false);
-                    setLoginData({ username: '', password: '' });
-                } else {
-                    alert("Username atau Password salah!");
-                }
+            const formatTime = (date) => {
+                return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
             };
 
             const totals = useMemo(() => {
-                const tin = transactions.filter(t => t.type === 'in').reduce((acc, curr) => acc + Number(curr.amount), 0);
-                const tout = transactions.filter(t => t.type === 'out').reduce((acc, curr) => acc + Number(curr.amount), 0);
+                const tin = transactions.filter(t => t.type === 'in').reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
+                const tout = transactions.filter(t => t.type === 'out').reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
                 return { in: tin, out: tout, balance: tin - tout };
             }, [transactions]);
 
-            const formatCurrency = (amount) => {
-                return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount || 0);
+            const handleLogout = () => {
+                setIsAdmin(false);
+                setView('beranda');
+                setShowPassword(false);
             };
 
+            const menuItems = [
+                { id: 'beranda', label: 'Beranda', icon: 'home' },
+                { id: 'pengurus', label: 'Pengurus', icon: 'users' },
+                { id: 'kas', label: 'Kas PHBI', icon: 'wallet' },
+                { id: 'galeri', label: 'Galeri', icon: 'image' },
+                ...(isAdmin ? [{ id: 'admin', label: 'Panel Admin', icon: 'layout-dashboard' }] : [])
+            ];
+
             return (
-                <div className="flex flex-col min-h-screen">
-                    {/* Header */}
-                    <header className="sticky top-0 z-50 glass-header border-b border-slate-200 px-4 md:px-8 py-3 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 text-green-700 bg-green-50 rounded-xl">
-                                <i data-lucide="menu"></i>
-                            </button>
-                            <div className="flex items-center gap-2 md:gap-3">
-                                <div className="w-9 h-9 md:w-11 md:h-11 bg-green-700 rounded-full flex items-center justify-center text-white shadow-lg font-black text-xs md:text-sm">MF</div>
-                                <div className="text-left">
-                                    <h1 className="text-sm md:text-lg font-extrabold text-green-800 leading-tight">MABDA'IL FALAH</h1>
-                                    <p className="text-[8px] md:text-[9px] font-bold text-slate-400 uppercase tracking-widest">PHBI & KAS</p>
+                <div className="min-h-screen flex flex-col pt-16 lg:pt-24">
+                    {/* Header Navigasi */}
+                    <header className="fixed top-0 left-0 w-full z-[100]">
+                        <nav className="glass border-b border-slate-200 shadow-sm">
+                            <div className="max-w-7xl mx-auto px-4 lg:px-6 py-3 lg:py-4 flex justify-between items-center">
+                                <div className="flex items-center gap-3 cursor-pointer" onClick={() => setView('beranda')}>
+                                    <div className="w-10 h-10 bg-emerald-800 rounded-xl flex items-center justify-center text-white font-extrabold shadow-lg">MF</div>
+                                    <div>
+                                        <h1 className="text-base lg:text-lg font-extrabold text-emerald-950 leading-none">Mabda'il Falah</h1>
+                                        <p className="text-[8px] font-black text-emerald-600 uppercase tracking-widest mt-1">Pondok Pesantren</p>
+                                    </div>
+                                </div>
+
+                                <div className="hidden lg:flex items-center gap-8">
+                                    <div className="flex gap-6">
+                                        {menuItems.map(item => (
+                                            <button key={item.id} onClick={() => setView(item.id)} 
+                                                className={`text-[10px] font-black uppercase tracking-widest transition-all pb-1 ${view === item.id ? 'nav-link-active' : 'text-slate-400 hover:text-emerald-700'}`}>
+                                                {item.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <button onClick={() => isAdmin ? setView('admin') : setShowLogin(true)} className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs border transition-all ${isAdmin ? 'bg-emerald-800 text-white shadow-lg' : 'bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100'}`}>
+                                            <i data-lucide={isAdmin ? "shield-check" : "lock"} className="w-3.5 h-3.5"></i>
+                                            {isAdmin ? 'Mode Admin' : 'Login'}
+                                        </button>
+                                        {isAdmin && (
+                                            <button onClick={handleLogout} className="logout-btn flex items-center justify-center w-10 h-10 rounded-xl bg-red-50 text-red-600 border border-red-100 transition-all shadow-sm" title="Keluar">
+                                                <i data-lucide="log-out" className="w-4 h-4"></i>
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="flex lg:hidden items-center gap-2">
+                                    {isAdmin && <button onClick={handleLogout} className="p-2 text-red-500"><i data-lucide="log-out" className="w-5 h-5"></i></button>}
+                                    <button onClick={() => isAdmin ? setView('admin') : setShowLogin(true)} className="p-2 text-emerald-800"><i data-lucide={isAdmin ? "shield-check" : "lock"} className="w-5 h-5"></i></button>
+                                    <button onClick={() => setIsMenuOpen(true)} className="p-2 text-emerald-800"><i data-lucide="menu" className="w-6 h-6"></i></button>
                                 </div>
                             </div>
-                        </div>
+                        </nav>
                         
-                        <div className="text-right flex flex-col items-end">
-                            <div className="text-sm md:text-lg font-mono font-black text-slate-800 leading-none">
-                                {currentTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                            </div>
-                            <div className="text-[8px] md:text-[10px] font-bold text-slate-500 uppercase tracking-tighter mt-1 whitespace-nowrap">
-                                {new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }).format(currentTime)}
+                        {/* Top Bar Informasi */}
+                        <div className="w-full bg-emerald-950 py-2 px-4 border-b border-emerald-900/50">
+                            <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+                                <div className="flex items-center gap-2 shrink-0">
+                                    <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-emerald-900/40 rounded-lg border border-emerald-800/50">
+                                        <i data-lucide="calendar" className="w-3 h-3 text-emerald-500"></i>
+                                        <span className="text-[9px] font-bold text-emerald-100 uppercase tracking-tighter">
+                                            {formatShortDate(currentTime)}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-900/40 rounded-lg border border-emerald-800/50">
+                                        <i data-lucide="clock" className="w-3 h-3 text-emerald-500"></i>
+                                        <span className="text-[9px] font-black text-emerald-100 tracking-widest">
+                                            {formatTime(currentTime)}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="flex-1 overflow-hidden relative">
+                                    <div key={infoIndex} className="flex items-center justify-center gap-2 animate-in fade-in slide-in-from-right-4 duration-700">
+                                        <i data-lucide={infoHighlights[infoIndex].icon} className="w-3 h-3 text-emerald-400"></i>
+                                        <span className="text-[9px] sm:text-[10px] font-bold text-emerald-50/90 uppercase tracking-widest leading-none text-center truncate">
+                                            {infoHighlights[infoIndex].text}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="hidden md:block shrink-0 w-[120px]"></div>
                             </div>
                         </div>
                     </header>
 
-                    {/* Marquee */}
-                    <div className="marquee-container no-print">
-                        <div className="marquee-content">
-                            <span className="mx-8">Saldo Kas: {formatCurrency(totals.balance)}</span>
-                            <span className="mx-8">•</span>
-                            <span className="mx-8">Infaq & Shadaqah anda sangat berarti bagi kami</span>
-                            <span className="mx-8">•</span>
-                            <span className="mx-8">Mabda'il Falah - Kp. Tanjakan</span>
-                        </div>
-                    </div>
-
-                    <div className="flex flex-1 overflow-hidden">
-                        {/* Sidebar */}
-                        <aside className={`fixed inset-y-0 left-0 z-[60] w-64 bg-white border-r shadow-2xl transition-transform duration-300 lg:translate-x-0 lg:static lg:shadow-none ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-                            <div className="p-4 space-y-1 h-full flex flex-col relative">
-                                <button onClick={() => setSidebarOpen(false)} className="lg:hidden absolute top-4 right-4 p-2 text-slate-400 hover:text-red-500">
-                                    <i data-lucide="x"></i>
-                                </button>
-
-                                <div className="mb-6 mt-4 lg:mt-0 px-4">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Main Menu</p>
+                    {/* Mobile Menu */}
+                    {isMenuOpen && (
+                        <div className="fixed inset-0 z-[200] lg:hidden">
+                            <div className="absolute inset-0 bg-emerald-950/40 backdrop-blur-md" onClick={() => setIsMenuOpen(false)}></div>
+                            <div className="absolute right-0 top-0 h-full w-[300px] bg-white shadow-2xl p-6 flex flex-col animate-in slide-in-from-right duration-300">
+                                <div className="flex justify-between items-center mb-10">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-8 h-8 bg-emerald-800 rounded-lg flex items-center justify-center text-white text-xs font-bold">MF</div>
+                                        <span className="text-xs font-black uppercase tracking-widest text-emerald-950">Menu Utama</span>
+                                    </div>
+                                    <button onClick={() => setIsMenuOpen(false)} className="p-2 text-slate-400 hover:text-red-500 transition-colors">
+                                        <i data-lucide="x" className="w-6 h-6"></i>
+                                    </button>
                                 </div>
-                                
-                                <nav className="space-y-1">
-                                    {[
-                                        { id: 'dashboard', icon: 'layout-grid', label: 'Dashboard' },
-                                        { id: 'history', icon: 'file-text', label: 'Laporan Kas' },
-                                        { id: 'galeri', icon: 'image', label: 'Dokumentasi' },
-                                        { id: 'struktur', icon: 'users', label: 'Pengurus' }
-                                    ].map(item => (
-                                        <button key={item.id} onClick={() => {setView(item.id); setSidebarOpen(false)}} className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm transition-all ${view === item.id ? 'active-nav' : 'text-slate-500 hover:bg-slate-50'}`}>
-                                            <i data-lucide={item.icon} className="w-5 h-5"></i> {item.label}
+                                <div className="flex flex-col gap-2">
+                                    {menuItems.map(m => (
+                                        <button key={m.id} onClick={() => { setView(m.id); setIsMenuOpen(false); }} 
+                                            className={`flex items-center gap-4 px-6 py-5 rounded-2xl transition-all ${view === m.id ? 'bg-emerald-800 text-white shadow-lg' : 'text-slate-400 hover:bg-emerald-50 hover:text-emerald-800'}`}>
+                                            <i data-lucide={m.icon} className="w-5 h-5"></i>
+                                            <span className="text-sm font-bold uppercase tracking-widest">{m.label}</span>
                                         </button>
                                     ))}
-                                </nav>
-
-                                {isAdmin && (
-                                    <div className="mt-8 pt-6 border-t border-slate-100">
-                                        <p className="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Admin Panel</p>
-                                        <div className="space-y-2">
-                                            <button onClick={() => {setView('add-kas'); setSidebarOpen(false)}} className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm ${view === 'add-kas' ? 'active-admin' : 'text-blue-600 bg-blue-50'}`}>
-                                                <i data-lucide="plus-circle" className="w-5 h-5"></i> Input Kas
-                                            </button>
-                                            <button onClick={() => {setView('add-galeri'); setSidebarOpen(false)}} className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm ${view === 'add-galeri' ? 'active-admin' : 'text-purple-600 bg-purple-50'}`}>
-                                                <i data-lucide="image-plus" className="w-5 h-5"></i> Input Dokumentasi
-                                            </button>
-                                            <button onClick={() => {setView('add-pengurus'); setSidebarOpen(false)}} className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm ${view === 'add-pengurus' ? 'active-admin' : 'text-orange-600 bg-orange-50'}`}>
-                                                <i data-lucide="user-plus" className="w-5 h-5"></i> Input Pengurus
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-
-                                <div className="mt-auto pt-4">
-                                    {!isAdmin ? (
-                                        <button onClick={() => setShowLoginModal(true)} className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] tracking-widest flex items-center justify-center gap-2">
-                                            <i data-lucide="lock" className="w-4 h-4"></i> LOGIN ADMIN
-                                        </button>
-                                    ) : (
-                                        <button onClick={() => setIsAdmin(false)} className="w-full py-4 bg-red-50 text-red-600 rounded-2xl font-black text-[10px] tracking-widest flex items-center justify-center gap-2">
-                                            <i data-lucide="log-out" className="w-4 h-4"></i> KELUAR
-                                        </button>
-                                    )}
                                 </div>
                             </div>
-                        </aside>
+                        </div>
+                    )}
 
-                        {/* Content */}
-                        <main className="flex-1 overflow-y-auto bg-[#F8FAFC] p-4 md:p-8 custom-scrollbar">
-                            {loading && (
-                                <div className="flex flex-col items-center justify-center py-20 animate-pulse">
-                                    <div className="w-10 h-10 border-4 border-green-700 border-t-transparent rounded-full animate-spin mb-4"></div>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sinkronisasi Data...</p>
+                    <main className="flex-1 bg-grid pb-20">
+                        {view === 'beranda' && (
+                            <section className="hero-gradient text-white pt-16 pb-24 lg:pt-32 lg:pb-48 px-6 text-center relative overflow-hidden">
+                                <div className="max-w-4xl mx-auto relative z-10 animate-in fade-in duration-1000">
+                                    <h2 className="text-5xl md:text-8xl font-black mb-8 leading-[0.9] tracking-tighter italic">Pesantren<br/>Mabda'il Falah</h2>
+                                    <p className="text-base lg:text-xl text-emerald-50/80 max-w-2xl mx-auto mb-12 font-medium leading-relaxed">
+                                        Mencetak generasi rabbani yang berpegang teguh pada Al-Qur'an, Hadits, dan khazanah Kitab Kuning melalui pendidikan berbasis adab dan kemandirian.
+                                    </p>
+                                    <div className="flex flex-col sm:flex-row justify-center gap-4">
+                                        <button className="bg-amber-500 text-emerald-950 px-10 py-4 rounded-full font-black text-[11px] uppercase tracking-widest shadow-xl hover:scale-105 transition-all">Pendaftaran PSB</button>
+                                        <button onClick={() => setView('galeri')} className="bg-white/10 backdrop-blur-md border border-white/20 px-10 py-4 rounded-full font-black text-[11px] uppercase tracking-widest hover:bg-white/20 transition-all">Lihat Dokumentasi</button>
+                                    </div>
                                 </div>
-                            )}
+                            </section>
+                        )}
 
-                            {!loading && view === 'dashboard' && (
-                                <div className="max-w-5xl mx-auto space-y-6 text-left">
-                                    <div className="bg-gradient-to-br from-green-800 to-green-600 p-8 rounded-[40px] text-white shadow-xl">
-                                        <h2 className="text-2xl md:text-4xl font-black mb-6">Ringkasan Kas</h2>
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                            <div className="bg-white/10 p-5 rounded-3xl border border-white/5">
-                                                <p className="text-[9px] font-black uppercase opacity-60 mb-1">Pemasukan</p>
-                                                <h3 className="text-lg font-black">{formatCurrency(totals.in)}</h3>
+                        {view === 'pengurus' && (
+                            <div className="max-w-7xl mx-auto px-4 lg:px-6 py-12 lg:py-20 animate-in fade-in duration-500">
+                                <div className="mb-16">
+                                    <h3 className="text-4xl font-black text-emerald-950 tracking-tighter mb-2">Struktur Pengurus</h3>
+                                    <p className="text-slate-400 font-medium">Khidmah dan dedikasi untuk membina santri.</p>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                                    {pengurus.map((p, idx) => (
+                                        <div key={p.id || idx} className="profile-card group bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 flex flex-col items-center text-center">
+                                            <div className="w-32 h-32 mb-6 rounded-3xl overflow-hidden ring-4 ring-emerald-50 relative bg-slate-100">
+                                                <img 
+                                                    src={p.foto || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.nama)}&background=064e3b&color=fff&size=128`} 
+                                                    alt={p.nama} 
+                                                    className="profile-img w-full h-full object-cover transition-transform duration-700"
+                                                />
                                             </div>
-                                            <div className="bg-white/10 p-5 rounded-3xl border border-white/5">
-                                                <p className="text-[9px] font-black uppercase opacity-60 mb-1">Pengeluaran</p>
-                                                <h3 className="text-lg font-black">{formatCurrency(totals.out)}</h3>
+                                            <span className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-[9px] font-black uppercase tracking-widest border border-emerald-100 mb-3">{p.sebagai}</span>
+                                            <h4 className="font-bold text-slate-800 text-lg leading-tight mb-2">{p.nama}</h4>
+                                            <div className="flex items-center justify-center gap-2 text-slate-400 text-xs font-medium">
+                                                <i data-lucide="phone" className="w-3 h-3"></i> {p.kontak || '-'}
                                             </div>
-                                            <div className="bg-white p-5 rounded-3xl text-green-900">
-                                                <p className="text-[9px] font-black uppercase opacity-50 mb-1">Saldo Akhir</p>
-                                                <h3 className="text-lg font-black">{formatCurrency(totals.balance)}</h3>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {view === 'kas' && (
+                            <div className="max-w-6xl mx-auto px-4 lg:px-6 py-12 lg:py-20 animate-in slide-in-from-bottom-4">
+                                <div className="mb-12">
+                                    <h3 className="text-4xl font-black text-emerald-950 tracking-tighter mb-2">Laporan Kas PHBI</h3>
+                                    <p className="text-slate-400 font-medium">Data keuangan pembangunan secara transparan dan akuntabel.</p>
+                                </div>
+                                <div className="grid lg:grid-cols-3 gap-8">
+                                    <div className="lg:col-span-2 bg-emerald-900 rounded-[40px] p-10 lg:p-14 text-white shadow-2xl relative overflow-hidden">
+                                        <p className="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-400 mb-4">Saldo Tersedia</p>
+                                        <h2 className="text-4xl md:text-7xl font-black mb-12 tracking-tighter">{formatRupiah(totals.balance)}</h2>
+                                        <div className="grid grid-cols-2 gap-8 pt-10 border-t border-white/10">
+                                            <div>
+                                                <p className="text-[10px] font-bold text-emerald-400 uppercase mb-2">Pemasukan</p>
+                                                <p className="text-xl lg:text-2xl font-black">{formatRupiah(totals.in)}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-bold text-red-400 uppercase mb-2">Pengeluaran</p>
+                                                <p className="text-xl lg:text-2xl font-black">{formatRupiah(totals.out)}</p>
                                             </div>
                                         </div>
                                     </div>
-                                    
-                                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                                        {[
-                                            { label: 'Transaksi', val: transactions.length, icon: 'trending-up', bg: 'bg-green-50', text: 'text-green-600' },
-                                            { label: 'Pengurus', val: pengurusList.length, icon: 'users', bg: 'bg-blue-50', text: 'text-blue-600' },
-                                            { label: 'Foto', val: galleryItems.length, icon: 'image', bg: 'bg-purple-50', text: 'text-purple-600' },
-                                            { label: 'Lokasi', val: 'Tanjakan', icon: 'map-pin', bg: 'bg-orange-50', text: 'text-orange-600' }
-                                        ].map((stat, i) => (
-                                            <div key={i} className="bg-white p-6 rounded-[32px] border border-slate-100 flex flex-col items-center">
-                                                <div className={`w-10 h-10 ${stat.bg} ${stat.text} rounded-full flex items-center justify-center mb-3`}><i data-lucide={stat.icon} className="w-5 h-5"></i></div>
-                                                <p className="text-[9px] font-black text-slate-400 uppercase">{stat.label}</p>
-                                                <h4 className="font-black text-slate-800">{stat.val}</h4>
-                                            </div>
-                                        ))}
+                                    <div className="bg-white border border-slate-200 rounded-[40px] p-10 flex flex-col items-center text-center shadow-xl">
+                                        <div className="w-20 h-20 bg-emerald-50 rounded-3xl flex items-center justify-center text-emerald-600 mb-8 shadow-inner">
+                                            <i data-lucide="hand-coins" className="w-10 h-10"></i>
+                                        </div>
+                                        <h4 className="font-black text-slate-800 text-xl mb-4">Donasi Digital</h4>
+                                        <p className="text-slate-400 text-sm font-medium leading-relaxed mb-8">Partisipasi anda sangat berharga untuk pengembangan pendidikan Islam.</p>
+                                        <button className="w-full py-4 bg-emerald-800 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-700 transition-all">Hubungi Bendahara</button>
                                     </div>
                                 </div>
-                            )}
-
-                            {/* Views for History, Galeri, Struktur tetap sama... */}
-                            {!loading && view === 'history' && (
-                                <div className="max-w-6xl mx-auto space-y-6 text-left">
-                                    <div className="flex justify-between items-center">
-                                        <h2 className="text-xl font-black text-slate-800">Laporan Keuangan</h2>
-                                        {isAdmin && <button onClick={() => setView('add-kas')} className="bg-slate-900 text-white px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest">+ Baru</button>}
+                                <div className="mt-16 bg-white rounded-[2rem] border border-slate-100 overflow-hidden shadow-sm">
+                                    <div className="p-8 border-b border-slate-50 flex justify-between items-center">
+                                        <h4 className="font-black text-emerald-950 uppercase tracking-widest text-sm">Riwayat Transaksi</h4>
                                     </div>
-                                    <div className="bg-white rounded-[32px] overflow-hidden border border-slate-100 shadow-sm overflow-x-auto">
-                                        <table className="w-full text-left min-w-[600px]">
-                                            <thead className="bg-slate-50 text-[9px] font-black text-slate-400 uppercase">
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-left">
+                                            <thead className="bg-slate-50 text-[10px] font-black uppercase text-slate-400 tracking-widest">
                                                 <tr>
-                                                    <th className="p-5">Tanggal</th>
-                                                    <th className="p-5">Keterangan</th>
-                                                    <th className="p-5 text-right">Debit</th>
-                                                    <th className="p-5 text-right">Kredit</th>
-                                                    {isAdmin && <th className="p-5 text-center">Aksi</th>}
+                                                    <th className="px-8 py-5">Tanggal</th>
+                                                    <th className="px-8 py-5">Keterangan</th>
+                                                    <th className="px-8 py-5 text-right">Nominal</th>
                                                 </tr>
                                             </thead>
-                                            <tbody className="text-xs divide-y divide-slate-50">
-                                                {transactions.map((t, i) => (
-                                                    <tr key={t.id || i} className="hover:bg-slate-50/50">
-                                                        <td className="p-5 font-bold text-slate-500 whitespace-nowrap">{t.date}</td>
-                                                        <td className="p-5">
-                                                            <div className="font-bold text-slate-800">{t.description}</div>
-                                                            <div className="text-[9px] font-black text-slate-300 uppercase mt-1">{t.category}</div>
+                                            <tbody className="divide-y divide-slate-50">
+                                                {transactions.slice(0, 20).map((t, idx) => (
+                                                    <tr key={idx} className="hover:bg-slate-50/50">
+                                                        <td className="px-8 py-5 text-xs font-bold text-slate-500">{t.date}</td>
+                                                        <td className="px-8 py-5 text-sm font-bold text-slate-800">{t.description}</td>
+                                                        <td className={`px-8 py-5 text-right font-black text-sm ${t.type === 'in' ? 'text-emerald-600' : 'text-red-500'}`}>
+                                                            {t.type === 'in' ? '+' : '-'} {new Intl.NumberFormat('id-ID').format(t.amount)}
                                                         </td>
-                                                        <td className="p-5 text-right font-black text-green-600">{t.type === 'in' ? formatCurrency(t.amount) : '-'}</td>
-                                                        <td className="p-5 text-right font-black text-red-500">{t.type === 'out' ? formatCurrency(t.amount) : '-'}</td>
-                                                        {isAdmin && (
-                                                            <td className="p-5 text-center whitespace-nowrap">
-                                                                <button onClick={() => openEdit(t, 'kas')} className="p-2 text-blue-400"><i data-lucide="edit-2" className="w-4 h-4"></i></button>
-                                                                <button onClick={() => handleDelete(t.id, 'Sheet1')} className="p-2 text-red-400"><i data-lucide="trash" className="w-4 h-4"></i></button>
-                                                            </td>
-                                                        )}
                                                     </tr>
                                                 ))}
                                             </tbody>
                                         </table>
                                     </div>
                                 </div>
-                            )}
+                            </div>
+                        )}
 
-                            {!loading && view === 'galeri' && (
-                                <div className="max-w-6xl mx-auto space-y-6 text-left">
-                                    <div className="flex justify-between items-center">
-                                        <h2 className="text-xl font-black text-slate-800">Dokumentasi Kegiatan</h2>
-                                        {isAdmin && <button onClick={() => setView('add-galeri')} className="bg-slate-900 text-white px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest">+ Foto</button>}
+                        {view === 'admin' && isAdmin && (
+                            <div className="max-w-7xl mx-auto px-4 lg:px-6 py-12 lg:py-20 animate-in zoom-in-95 duration-300">
+                                <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6">
+                                    <div>
+                                        <h3 className="text-4xl font-black text-emerald-950 tracking-tighter mb-2 italic underline decoration-amber-400">Admin Control</h3>
+                                        <p className="text-slate-400 font-medium">Kelola konten website secara terintegrasi.</p>
                                     </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                        {galleryItems.map((item, i) => (
-                                            <div key={item.id || i} className="bg-white rounded-[32px] overflow-hidden border border-slate-100 group relative">
-                                                {isAdmin && (
-                                                    <div className="absolute top-4 right-4 z-10 flex gap-2">
-                                                        <button onClick={() => openEdit(item, 'galeri')} className="bg-white/90 p-2 rounded-xl text-blue-600 shadow-lg"><i data-lucide="edit-2" className="w-4 h-4"></i></button>
-                                                        <button onClick={() => handleDelete(item.id, 'galeri')} className="bg-white/90 p-2 rounded-xl text-red-600 shadow-lg"><i data-lucide="trash" className="w-4 h-4"></i></button>
-                                                    </div>
-                                                )}
-                                                <img src={item.imageUrl} className="w-full aspect-video object-cover" loading="lazy" />
-                                                <div className="p-5">
-                                                    <p className="text-[9px] font-black text-green-600 uppercase mb-1">{item.tanggal}</p>
-                                                    <h3 className="font-bold text-slate-800">{item.judul}</h3>
-                                                </div>
-                                            </div>
+                                    <div className="flex bg-slate-200/50 p-1.5 rounded-2xl">
+                                        {['kas', 'galeri', 'pengurus'].map(tab => (
+                                            <button 
+                                                key={tab}
+                                                onClick={() => { setAdminTab(tab); setEditingId(null); setFormData({}); }}
+                                                className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${adminTab === tab ? 'admin-tab-active' : 'text-slate-400 hover:text-emerald-800'}`}
+                                            >
+                                                {tab}
+                                            </button>
                                         ))}
                                     </div>
                                 </div>
-                            )}
 
-                            {!loading && view === 'struktur' && (
-                                <div className="max-w-6xl mx-auto space-y-6 text-left">
-                                    <div className="flex justify-between items-center">
-                                        <h2 className="text-xl font-black text-slate-800">Pengurus PHBI</h2>
-                                        {isAdmin && <button onClick={() => setView('add-pengurus')} className="bg-slate-900 text-white px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest">+ Pengurus</button>}
-                                    </div>
-                                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                                        {pengurusList.map((p, i) => (
-                                            <div key={p.id || i} className="bg-white p-5 rounded-[28px] border border-slate-100 flex flex-col items-center relative group">
-                                                {isAdmin && (
-                                                    <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <button onClick={() => openEdit(p, 'pengurus')} className="p-1.5 text-blue-400"><i data-lucide="edit-2" className="w-3 h-3"></i></button>
-                                                        <button onClick={() => handleDelete(p.id, 'pengurus')} className="p-1.5 text-red-400"><i data-lucide="trash" className="w-3 h-3"></i></button>
-                                                    </div>
-                                                )}
-                                                <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 mb-3"><i data-lucide="user" className="w-7 h-7"></i></div>
-                                                <h4 className="font-black text-slate-800 text-xs text-center leading-tight">{p.nama}</h4>
-                                                <p className="text-[8px] font-black text-green-600 uppercase tracking-widest mt-2">{p.sebagai || p.jabatan}</p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
+                                <div className="bg-white rounded-[3rem] p-8 lg:p-12 shadow-sm border border-slate-100 mb-12">
+                                    <h4 className="text-xl font-black text-emerald-950 mb-8 uppercase tracking-widest">
+                                        {editingId ? 'Edit Data' : `Tambah ${adminTab}`}
+                                    </h4>
 
-                            {/* Footer */}
-                            <footer className="mt-12 pt-8 border-t border-slate-200 text-left">
-                                <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                                    <div className="space-y-4">
-                                        <h4 className="text-sm font-black text-green-800 uppercase tracking-widest">Informasi Kontak</h4>
-                                        <div className="space-y-3">
-                                            <a href={`https://wa.me/${CONTACT_INFO.whatsapp}`} className="flex items-center gap-3 text-slate-500 hover:text-green-600 transition-colors">
-                                                <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center text-green-600"><i data-lucide="phone" className="w-4 h-4"></i></div>
-                                                <span className="text-xs font-bold">+{CONTACT_INFO.whatsapp}</span>
-                                            </a>
-                                            <div className="flex items-center gap-3 text-slate-500">
-                                                <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600"><i data-lucide="mail" className="w-4 h-4"></i></div>
-                                                <span className="text-xs font-bold">{CONTACT_INFO.email}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="space-y-4">
-                                        <h4 className="text-sm font-black text-green-800 uppercase tracking-widest">Lokasi Sekretariat</h4>
-                                        <div className="flex gap-3 text-slate-500">
-                                            <div className="w-8 h-8 shrink-0 bg-orange-50 rounded-lg flex items-center justify-center text-orange-600"><i data-lucide="map-pin" className="w-4 h-4"></i></div>
-                                            <p className="text-xs font-bold leading-relaxed">{CONTACT_INFO.address}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="text-center py-6 border-t border-slate-100">
-                                    <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">© 2026 MABDA'IL FALAH - PHBI & KAS SYSTEM</p>
-                                </div>
-                            </footer>
-                        </main>
-                    </div>
-
-                    {/* Modal Input/Edit */}
-                    {(isAdmin && (view.startsWith('add-') || showEditModal)) && (
-                        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-                            <div className="bg-white w-full max-w-lg rounded-[40px] p-8 shadow-2xl relative animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto">
-                                <button onClick={() => {setShowEditModal(false); setView('dashboard'); setEditItem(null)}} className="absolute top-6 right-6 p-2 text-slate-300"><i data-lucide="x"></i></button>
-                                <h3 className="text-xl font-black mb-6 text-left">{editItem ? 'Edit Data' : 'Tambah Baru'}</h3>
-                                
-                                <form onSubmit={handleSubmitAction} className="space-y-5 text-left">
-                                    <input type="hidden" name="action_type" value={editItem ? 'update' : 'insert'} />
-                                    {editItem && <input type="hidden" name="id" value={editItem.id} />}
-                                    
-                                    {(view.includes('kas') || editItem?._type === 'kas') && (
-                                        <div className="space-y-4">
-                                            <div className="space-y-1">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Keterangan</label>
-                                                <input name="description" defaultValue={editItem?.description} placeholder="Contoh: Pembelian Karpet" className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-green-100" required />
-                                            </div>
-                                            
-                                            <div className="grid grid-cols-2 gap-4">
+                                    <form onSubmit={(e) => {
+                                        e.preventDefault();
+                                        const action = editingId ? 'edit' : 'add';
+                                        const sheet = adminTab === 'kas' ? 'Sheet1' : adminTab;
+                                        handleCrudAction(action, sheet, formData);
+                                    }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                        
+                                        {adminTab === 'kas' && (
+                                            <>
                                                 <div className="space-y-1">
-                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Jumlah (IDR)</label>
-                                                    <input name="amount" defaultValue={editItem?.amount} type="number" placeholder="0" className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none" required />
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase ml-2">Tanggal</label>
+                                                    <input value={formData.date || ''} onChange={e => setFormData({...formData, date: e.target.value})} type="date" className="w-full bg-slate-50 border-none p-4 rounded-2xl font-bold text-xs" required />
                                                 </div>
                                                 <div className="space-y-1">
-                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Jenis Kas</label>
-                                                    <select name="type" defaultValue={editItem?.type || "in"} className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none cursor-pointer">
-                                                        <option value="in">MASUK</option>
-                                                        <option value="out">KELUAR</option>
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase ml-2">Keterangan</label>
+                                                    <input value={formData.description || ''} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="Keterangan transaksi" className="w-full bg-slate-50 border-none p-4 rounded-2xl font-bold text-xs" required />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase ml-2">Nominal</label>
+                                                    <input value={formData.amount || ''} onChange={e => setFormData({...formData, amount: e.target.value})} type="number" placeholder="Nominal Rp." className="w-full bg-slate-50 border-none p-4 rounded-2xl font-bold text-xs" required />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase ml-2">Jenis Kas</label>
+                                                    <select value={formData.type || ''} onChange={e => setFormData({...formData, type: e.target.value})} className="w-full bg-slate-50 border-none p-4 rounded-2xl font-bold text-xs appearance-none" required>
+                                                        <option value="">Pilih Kategori</option>
+                                                        <option value="in">Pemasukan (+)</option>
+                                                        <option value="out">Pengeluaran (-)</option>
                                                     </select>
                                                 </div>
+                                            </>
+                                        )}
+
+                                        {adminTab === 'galeri' && (
+                                            <>
+                                                <input value={formData.judul || ''} onChange={e => setFormData({...formData, judul: e.target.value})} placeholder="Judul Foto" className="bg-slate-50 border-none p-4 rounded-2xl font-bold text-xs" required />
+                                                <input value={formData.imageUrl || ''} onChange={e => setFormData({...formData, imageUrl: e.target.value})} placeholder="URL Gambar" className="bg-slate-50 border-none p-4 rounded-2xl font-bold text-xs" required />
+                                                <input value={formData.tanggal || ''} onChange={e => setFormData({...formData, tanggal: e.target.value})} type="date" className="bg-slate-50 border-none p-4 rounded-2xl font-bold text-xs" required />
+                                            </>
+                                        )}
+
+                                        {adminTab === 'pengurus' && (
+                                            <>
+                                                <input value={formData.nama || ''} onChange={e => setFormData({...formData, nama: e.target.value})} placeholder="Nama Lengkap" className="bg-slate-50 border-none p-4 rounded-2xl font-bold text-xs" required />
+                                                <input value={formData.sebagai || ''} onChange={e => setFormData({...formData, sebagai: e.target.value})} placeholder="Jabatan" className="bg-slate-50 border-none p-4 rounded-2xl font-bold text-xs" required />
+                                                <input value={formData.foto || ''} onChange={e => setFormData({...formData, foto: e.target.value})} placeholder="URL Foto" className="bg-slate-50 border-none p-4 rounded-2xl font-bold text-xs" />
+                                            </>
+                                        )}
+
+                                        <button type="submit" className="md:col-span-full bg-emerald-800 text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl mt-4 hover:bg-emerald-700 transition-all">
+                                            {isLoading ? 'Sedang Memproses...' : editingId ? 'Simpan Perubahan' : 'Tambah Data Baru'}
+                                        </button>
+                                        {editingId && (
+                                            <button type="button" onClick={() => {setEditingId(null); setFormData({});}} className="md:col-span-full border border-slate-200 text-slate-400 py-3 rounded-2xl font-bold text-[9px] uppercase tracking-widest">Batal Edit</button>
+                                        )}
+                                    </form>
+                                </div>
+
+                                <div className="bg-white rounded-[3rem] overflow-hidden border border-slate-100 shadow-sm">
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-left">
+                                            <thead className="bg-slate-50 border-b border-slate-100">
+                                                <tr>
+                                                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Informasi Utama</th>
+                                                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Aksi</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-50">
+                                                {(adminTab === 'kas' ? transactions : adminTab === 'galeri' ? gallery : pengurus).map((item, i) => (
+                                                    <tr key={item.id || i} className="hover:bg-slate-50/30 transition-colors">
+                                                        <td className="px-8 py-6">
+                                                            {adminTab === 'kas' ? (
+                                                                <div className="flex flex-col gap-1">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <p className="font-bold text-slate-800 text-sm">{item.description}</p>
+                                                                        <span className={`text-[8px] font-black px-2 py-0.5 rounded-md uppercase tracking-tighter ${item.type === 'in' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                                                                            {item.type === 'in' ? 'Masuk' : 'Keluar'}
+                                                                        </span>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-3">
+                                                                        <span className="text-[10px] text-slate-400 font-black uppercase tracking-tighter">{item.date}</span>
+                                                                        <span className={`text-xs font-black ${item.type === 'in' ? 'text-emerald-600' : 'text-red-600'}`}>
+                                                                            {item.type === 'in' ? '+' : '-'} {formatRupiah(item.amount)}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="flex flex-col">
+                                                                    <p className="font-bold text-slate-800 text-sm">{item.judul || item.nama}</p>
+                                                                    <span className="text-[10px] text-slate-400 font-black uppercase tracking-tighter">{item.tanggal || item.sebagai}</span>
+                                                                </div>
+                                                            )}
+                                                        </td>
+                                                        <td className="px-8 py-6 text-right">
+                                                            <div className="flex justify-end gap-2">
+                                                                <button onClick={() => { setEditingId(item.id); setFormData(item); window.scrollTo({top: 200, behavior: 'smooth'}); }} className="w-9 h-9 flex items-center justify-center bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-sm">
+                                                                    <i data-lucide="edit-3" className="w-4 h-4"></i>
+                                                                </button>
+                                                                <button onClick={() => { if(confirm('Hapus data ini?')) handleCrudAction('delete', adminTab === 'kas' ? 'Sheet1' : adminTab, { id: item.id }); }} className="w-9 h-9 flex items-center justify-center bg-red-50 text-red-600 rounded-xl hover:bg-red-600 hover:text-white transition-all shadow-sm">
+                                                                    <i data-lucide="trash-2" className="w-4 h-4"></i>
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {view === 'galeri' && (
+                            <div className="max-w-7xl mx-auto px-4 lg:px-6 py-12 lg:py-20 animate-in fade-in duration-500">
+                                <div className="mb-12 text-center lg:text-left">
+                                    <h3 className="text-4xl font-black text-emerald-950 tracking-tighter mb-2">Galeri & Dokumentasi</h3>
+                                    <p className="text-slate-400 font-medium">Dokumentasi kegiatan dan pembangunan pondok.</p>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                                    {gallery.map((item, idx) => (
+                                        <div key={item.id || idx} className="group bg-white rounded-3xl overflow-hidden shadow-sm border border-slate-100 flex flex-col">
+                                            <div className="aspect-[4/3] overflow-hidden relative bg-slate-50">
+                                                <img 
+                                                    src={item.imageUrl} 
+                                                    alt={item.judul} 
+                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                                    onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1590076215667-873d17e78167?w=800"; }}
+                                                />
                                             </div>
-                                            
-                                            <div className="space-y-1">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Pilih Kategori</label>
-                                                <select name="category" defaultValue={editItem?.category} className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none cursor-pointer" required>
-                                                    <option value="" disabled>-- Pilih Kategori --</option>
-                                                    {KATEGORI_KAS.map(kat => (
-                                                        <option key={kat} value={kat}>{kat}</option>
-                                                    ))}
-                                                </select>
+                                            <div className="p-6">
+                                                <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest mb-2 block">{item.tanggal}</span>
+                                                <h4 className="font-bold text-slate-800 text-lg leading-tight line-clamp-2">{item.judul}</h4>
                                             </div>
                                         </div>
-                                    )}
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </main>
 
-                                    {/* Inputs for Galeri & Pengurus */}
-                                    {(view.includes('galeri') || editItem?._type === 'galeri') && (
-                                        <div className="space-y-4">
-                                            <input name="judul" defaultValue={editItem?.judul} placeholder="Judul Kegiatan" className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none" required />
-                                            <input name="imageUrl" defaultValue={editItem?.imageUrl} type="url" placeholder="URL Foto" className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none" required />
-                                            <input name="tanggal" defaultValue={editItem?.tanggal || new Date().toLocaleDateString('id-ID')} placeholder="Tanggal" className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none" required />
+                    {/* Footer */}
+                    <footer className="bg-slate-950 text-white py-12 px-6 border-t border-white/5 mt-auto">
+                        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+                            <div className="text-center md:text-left">
+                                <div className="flex items-center justify-center md:justify-start gap-3 mb-4">
+                                    <div className="w-8 h-8 bg-emerald-800 rounded-lg flex items-center justify-center text-white font-bold">MF</div>
+                                    <span className="text-sm font-black uppercase tracking-widest text-emerald-50">Mabda'il Falah</span>
+                                </div>
+                                <p className="text-slate-500 text-xs max-w-xs leading-relaxed">Pendidikan Islam berbasis adab dan kemandirian untuk masa depan generasi Qur'ani.</p>
+                            </div>
+                            <p className="text-[10px] font-black text-slate-700 uppercase tracking-[0.4em]">© 2026 Ponpes Mabda'il Falah</p>
+                        </div>
+                    </footer>
+
+                    {/* Login Modal */}
+                    {showLogin && (
+                        <div className="fixed inset-0 z-[1000] bg-emerald-950/90 backdrop-blur-xl flex items-center justify-center p-4">
+                            <div className="bg-white w-full max-w-sm rounded-[40px] p-10 shadow-2xl relative animate-in zoom-in-95 duration-200">
+                                <button onClick={() => {setShowLogin(false); setShowPassword(false);}} className="absolute top-8 right-8 text-slate-300 hover:text-slate-500 transition-colors">
+                                    <i data-lucide="x" className="w-6 h-6"></i>
+                                </button>
+                                <div className="text-center mb-10">
+                                    <div className="w-16 h-16 bg-emerald-50 rounded-3xl flex items-center justify-center text-emerald-700 mx-auto mb-6 shadow-inner">
+                                        <i data-lucide="fingerprint" className="w-8 h-8"></i>
+                                    </div>
+                                    <h3 className="text-2xl font-black text-slate-800 tracking-tight">Admin Login</h3>
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2 italic">Akses Terbatas</p>
+                                </div>
+                                <form onSubmit={(e) => {
+                                    e.preventDefault();
+                                    const fd = new FormData(e.target);
+                                    if (fd.get('u') === ADMIN_USER && fd.get('p') === ADMIN_PASS) {
+                                        setIsAdmin(true); setShowLogin(false); setView('admin');
+                                    } else { 
+                                        alert("Username atau Password Salah!"); 
+                                    }
+                                }} className="space-y-4">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase text-slate-400 ml-4 tracking-widest">Username</label>
+                                        <input 
+                                            name="u" 
+                                            placeholder="" 
+                                            autoComplete="off"
+                                            className="w-full px-7 py-5 bg-slate-50 rounded-2xl font-bold text-sm border border-slate-100 outline-none focus:ring-2 focus:ring-emerald-500/20" 
+                                            required 
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase text-slate-400 ml-4 tracking-widest">Password</label>
+                                        <div className="relative">
+                                            <input 
+                                                name="p" 
+                                                type={showPassword ? "text" : "password"} 
+                                                placeholder="••••••••" 
+                                                className="w-full px-7 py-5 bg-slate-50 rounded-2xl font-bold text-sm border border-slate-100 outline-none focus:ring-2 focus:ring-emerald-500/20" 
+                                                required 
+                                            />
+                                            <button 
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 hover:text-emerald-700 transition-colors"
+                                            >
+                                                <i data-lucide={showPassword ? "eye-off" : "eye"} className="w-5 h-5"></i>
+                                            </button>
                                         </div>
-                                    )}
-
-                                    {(view.includes('pengurus') || editItem?._type === 'pengurus') && (
-                                        <div className="space-y-4">
-                                            <input name="nama" defaultValue={editItem?.nama} placeholder="Nama Lengkap" className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none" required />
-                                            <input name="sebagai" defaultValue={editItem?.sebagai || editItem?.jabatan} placeholder="Jabatan" className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none" required />
-                                        </div>
-                                    )}
-
-                                    <button type="submit" className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-xs tracking-widest uppercase shadow-lg hover:bg-slate-800 transition-colors">Simpan Data</button>
+                                    </div>
+                                    <button type="submit" className="w-full bg-emerald-800 text-white py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl hover:bg-emerald-700 transition-all mt-4">Masuk</button>
                                 </form>
                             </div>
                         </div>
                     )}
 
-                    {/* Modal Login */}
-                    {showLoginModal && (
-                        <div className="fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-xl flex items-center justify-center p-4">
-                            <div className="bg-white w-full max-sm rounded-[40px] p-10 shadow-2xl relative">
-                                <button onClick={() => setShowLoginModal(false)} className="absolute top-8 right-8 text-slate-300"><i data-lucide="x"></i></button>
-                                <h3 className="text-xl font-black text-slate-800 text-center mb-6">Admin Access</h3>
-                                <form onSubmit={handleLogin} className="space-y-4">
-                                    <input type="text" placeholder="Username" className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none border-2 border-transparent focus:border-green-200" value={loginData.username} onChange={e => setLoginData({...loginData, username: e.target.value})} />
-                                    <div className="relative">
-                                        <input type={showPassword ? "text" : "password"} placeholder="Password" className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none border-2 border-transparent focus:border-green-200" value={loginData.password} onChange={e => setLoginData({...loginData, password: e.target.value})} />
-                                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300"><i data-lucide={showPassword ? "eye-off" : "eye"} className="w-5 h-5"></i></button>
-                                    </div>
-                                    <button type="submit" className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest mt-2">Login</button>
-                                </form>
-                            </div>
+                    {/* Sinkronisasi */}
+                    {isLoading && (
+                        <div className="fixed bottom-8 right-8 z-[2000] bg-emerald-950 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 animate-in slide-in-from-right-10 duration-300">
+                            <div className="w-5 h-5 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin"></div>
+                            <span className="text-[10px] font-black uppercase tracking-widest">Sinkronisasi...</span>
                         </div>
                     )}
                 </div>
