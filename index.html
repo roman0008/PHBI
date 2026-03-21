@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kas PHBI MABDA'IL FALAH</title>
+    <title>Kas & Pengurus PHBI MABDA'IL FALAH</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -54,14 +54,43 @@
             vertical-align: middle;
         }
 
-        .gallery-card:hover img {
-            transform: scale(1.05);
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 10px;
         }
 
-        @media print {
-            .no-print { display: none !important; }
-            main { margin: 0 !important; padding: 0 !important; }
+        .active-nav {
+            background: #15803d !important;
+            color: white !important;
+            box-shadow: 0 10px 15px -3px rgba(21, 128, 61, 0.2);
         }
+
+        .active-admin {
+            background: #1e293b !important;
+            color: white !important;
+            box-shadow: 0 10px 15px -3px rgba(30, 41, 59, 0.2);
+        }
+
+        /* Print Styles */
+        @media print {
+            body { background: white !important; }
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            .print-container { padding: 20px !important; }
+            table { border-collapse: collapse !important; width: 100% !important; }
+            th, td { border: 1px solid #ddd !important; padding: 8px !important; font-size: 10pt !important; }
+            .kop-surat { text-align: center; border-bottom: 3px double black; margin-bottom: 20px; padding-bottom: 10px; }
+            .kop-surat h1 { font-size: 18pt; margin: 0; font-weight: bold; }
+            .kop-surat p { font-size: 10pt; margin: 2px 0; }
+        }
+
+        .print-only { display: none; }
     </style>
 </head>
 <body class="bg-[#FBFCFE] text-slate-900">
@@ -70,76 +99,61 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo, useCallback } = React;
         
-        // Sesuaikan dengan URL Apps Script Anda
-        const GSHEET_URL = "https://script.google.com/macros/s/AKfycbyA4g8Lcj-LPFkBCtVaoP_Q8vf6vyhQS5DDBbKrIASZugTWcN-UwX4S5g3AwBao8MnT/exec"; 
+        const GSHEET_URL = "https://script.google.com/macros/s/AKfycbyjQjA3aja6XbLWKChoJ4FrO0O8Tt3t9zbdk7Qx1tNfrP9J66UJaKWVmzEB90OQR-Hg/exec"; 
         const ADMIN_USER = "mabdail_admin";
         const ADMIN_PASS = "Mabda2026!PHBI";
+        const WA_NUMBER = "6281234567890"; // Ganti dengan nomor asli (awali dengan 62)
 
         const App = () => {
             const [isAdmin, setIsAdmin] = useState(false);
             const [showLoginModal, setShowLoginModal] = useState(false);
             const [loginData, setLoginData] = useState({ username: '', password: '' });
-            const [loginError, setLoginError] = useState('');
             const [view, setView] = useState('dashboard');
             const [sidebarOpen, setSidebarOpen] = useState(false);
-            const [searchTerm, setSearchTerm] = useState('');
-            const [editingId, setEditingId] = useState(null);
             const [loading, setLoading] = useState(false);
+            
             const [transactions, setTransactions] = useState([]);
             const [galleryItems, setGalleryItems] = useState([]);
+            const [pengurusList, setPengurusList] = useState([]);
             const [currentTime, setCurrentTime] = useState(new Date());
 
-            const [formData, setFormData] = useState({
-                description: '',
-                amount: '',
-                type: 'in',
-                category: 'Donasi',
-                date: new Date().toISOString().split('T')[0]
-            });
-
-            const [galleryFormData, setGalleryFormData] = useState({
-                title: '',
-                date: new Date().toISOString().split('T')[0],
-                imageUrl: ''
-            });
+            // Forms State
+            const [formData, setFormData] = useState({ id: '', description: '', amount: '', type: 'in', category: 'Donasi', date: new Date().toISOString().split('T')[0] });
+            const [pengurusForm, setPengurusForm] = useState({ id: '', nama: '', sebagai: '', kontak: '' });
+            const [galleryForm, setGalleryForm] = useState({ id: '', tanggal: new Date().toISOString().split('T')[0], judul: '', imageUrl: '' });
 
             const refreshIcons = useCallback(() => {
-                if (window.lucide) {
-                    window.lucide.createIcons();
-                }
+                if (window.lucide) window.lucide.createIcons();
             }, []);
 
             useEffect(() => {
                 refreshIcons();
-            }, [view, isAdmin, showLoginModal, transactions, galleryItems, sidebarOpen, refreshIcons]);
+            }, [view, isAdmin, showLoginModal, sidebarOpen, transactions, pengurusList, galleryItems, refreshIcons]);
 
             useEffect(() => {
                 const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-                fetchData();
-                fetchGallery();
+                fetchAllData();
                 return () => clearInterval(timer);
             }, []);
 
-            const fetchData = async () => {
+            const fetchAllData = async () => {
                 setLoading(true);
                 try {
-                    const response = await fetch(`${GSHEET_URL}?sheet=Sheet1`);
-                    const data = await response.json();
-                    setTransactions(Array.isArray(data) ? data.sort((a, b) => b.id - a.id) : []);
+                    const resTrans = await fetch(`${GSHEET_URL}?sheet=Sheet1`);
+                    const dataTrans = await resTrans.json();
+                    setTransactions(Array.isArray(dataTrans) ? dataTrans.sort((a, b) => new Date(b.date) - new Date(a.date)) : []);
+
+                    const resGal = await fetch(`${GSHEET_URL}?sheet=galeri`);
+                    const dataGal = await resGal.json();
+                    setGalleryItems(Array.isArray(dataGal) ? dataGal.sort((a, b) => b.id - a.id) : []);
+
+                    const resPeng = await fetch(`${GSHEET_URL}?sheet=pengurus`);
+                    const dataPeng = await resPeng.json();
+                    setPengurusList(Array.isArray(dataPeng) ? dataPeng : []);
                 } catch (error) {
-                    console.error("Gagal ambil data transaksi:", error);
+                    console.error("Fetch error:", error);
                 } finally {
                     setLoading(false);
-                }
-            };
-
-            const fetchGallery = async () => {
-                try {
-                    const response = await fetch(`${GSHEET_URL}?sheet=galeri`);
-                    const data = await response.json();
-                    setGalleryItems(Array.isArray(data) ? data.sort((a, b) => b.id - a.id) : []);
-                } catch (error) {
-                    console.error("Gagal ambil data galeri:", error);
                 }
             };
 
@@ -148,65 +162,70 @@
                 if (loginData.username === ADMIN_USER && loginData.password === ADMIN_PASS) {
                     setIsAdmin(true);
                     setShowLoginModal(false);
-                    setLoginError('');
-                    setLoginData({ username: '', password: '' });
-                } else {
-                    setLoginError('Kredensial salah atau tidak aman!');
                 }
             };
 
-            const handleSubmit = async (e) => {
+            const handleKasSubmit = async (e) => {
                 e.preventDefault();
-                if (loading) return;
                 setLoading(true);
-                const payload = { 
-                    ...formData, 
-                    amount: parseFloat(formData.amount), 
-                    id: editingId || Date.now(), 
-                    action: editingId ? 'edit' : 'add',
-                    isGallery: false 
+                const isEdit = !!formData.id;
+                const payload = {
+                    action: isEdit ? 'edit' : 'add',
+                    sheet: 'Sheet1',
+                    data: { ...formData, id: formData.id || Date.now().toString() }
                 };
+
                 try {
                     await fetch(GSHEET_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(payload) });
                     setTimeout(() => {
-                        fetchData();
-                        setEditingId(null);
-                        setFormData({ description: '', amount: '', type: 'in', category: 'Donasi', date: new Date().toISOString().split('T')[0] });
+                        fetchAllData();
+                        setFormData({ id: '', description: '', amount: '', type: 'in', category: 'Donasi', date: new Date().toISOString().split('T')[0] });
                         setView('history');
                         setLoading(false);
-                    }, 1500);
-                } catch (err) {
-                    console.error("Submit error:", err);
-                    setLoading(false);
-                }
+                    }, 1000);
+                } catch (err) { setLoading(false); }
             };
 
-            const handleGallerySubmit = async (e) => {
+            const handleGaleriSubmit = async (e) => {
                 e.preventDefault();
-                if (loading) return;
                 setLoading(true);
-
                 const payload = {
-                    id: Date.now(),
-                    tanggal: galleryFormData.date,
-                    judul: galleryFormData.title,
-                    imageUrl: galleryFormData.imageUrl,
-                    isGallery: true,
-                    action: 'add'
+                    action: 'add',
+                    sheet: 'galeri',
+                    data: { ...galleryForm, id: Date.now().toString() }
                 };
-
                 try {
                     await fetch(GSHEET_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(payload) });
                     setTimeout(() => {
-                        fetchGallery();
-                        setGalleryFormData({ title: '', date: new Date().toISOString().split('T')[0], imageUrl: '' });
+                        fetchAllData();
+                        setGalleryForm({ id: '', tanggal: new Date().toISOString().split('T')[0], judul: '', imageUrl: '' });
                         setView('galeri');
                         setLoading(false);
-                    }, 1500);
-                } catch (err) {
-                    console.error("Gallery submit error:", err);
-                    setLoading(false);
-                }
+                    }, 1000);
+                } catch (err) { setLoading(false); }
+            };
+
+            const handlePengurusSubmit = async (e) => {
+                e.preventDefault();
+                setLoading(true);
+                const payload = {
+                    action: 'add',
+                    sheet: 'pengurus',
+                    data: { ...pengurusForm, id: Date.now().toString() }
+                };
+                try {
+                    await fetch(GSHEET_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(payload) });
+                    setTimeout(() => {
+                        fetchAllData();
+                        setPengurusForm({ id: '', nama: '', sebagai: '', kontak: '' });
+                        setView('struktur');
+                        setLoading(false);
+                    }, 1000);
+                } catch (err) { setLoading(false); }
+            };
+
+            const handlePrint = () => {
+                window.print();
             };
 
             const totals = useMemo(() => {
@@ -219,26 +238,6 @@
                 return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount || 0);
             };
 
-            const filteredTransactions = transactions.filter(t => t.description?.toString().toLowerCase().includes(searchTerm.toLowerCase()));
-
-            const NavButton = ({ targetView, icon, label, isAdminOnly = false, isAction = false }) => {
-                if (isAdminOnly && !isAdmin) return null;
-                
-                const isActive = view === targetView;
-                const baseClass = "w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm transition-all ";
-                const activeClass = isAction ? "bg-blue-600 text-white" : "bg-green-700 text-white shadow-lg";
-                const inactiveClass = isAction ? "text-blue-600 bg-blue-50 hover:bg-blue-100" : "text-slate-500 hover:bg-slate-50";
-
-                return (
-                    <button 
-                        onClick={() => {setView(targetView); setSidebarOpen(false)}} 
-                        className={`${baseClass} ${isActive ? activeClass : inactiveClass}`}
-                    >
-                        <i data-lucide={icon} className="w-5 h-5"></i> {label}
-                    </button>
-                );
-            };
-
             return (
                 <div className="flex flex-col min-h-screen">
                     {/* Header */}
@@ -249,312 +248,437 @@
                             </button>
                             <div>
                                 <h1 className="text-base md:text-lg font-extrabold text-green-800 leading-none">MABDA'IL FALAH</h1>
-                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Digital Kas & Galeri PHBI</p>
+                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Sistem Informasi PHBI</p>
                             </div>
                         </div>
-                        <div className="text-right">
-                            <div className="text-lg md:text-xl font-mono font-black text-slate-800 tabular-nums leading-none">{currentTime.toLocaleTimeString('id-ID')}</div>
-                            <div className="text-[9px] font-bold text-slate-400 uppercase mt-1">{currentTime.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' })}</div>
+                        <div className="text-right flex items-center gap-4">
+                            <div className="hidden sm:block text-right">
+                                <div className="text-lg font-mono font-black text-slate-800">{currentTime.toLocaleTimeString('id-ID')}</div>
+                                <div className="text-[9px] font-bold text-slate-400 uppercase">{currentTime.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' })}</div>
+                            </div>
                         </div>
                     </header>
 
-                    {/* Banner Berjalan */}
+                    {/* Print Only View */}
+                    <div className="print-only print-container">
+                        <div className="kop-surat">
+                            <h1>PANITIA HARI BESAR ISLAM (PHBI)</h1>
+                            <h1 className="text-green-800">MABDA'IL FALAH</h1>
+                            <p>Sekretariat: Jl. Raya Mabdail Falah No. 12, Tangerang, Banten</p>
+                            <p>WhatsApp: 0812-xxxx-xxxx | Email: phbi.mabdail@gmail.com</p>
+                        </div>
+                        <div className="text-center mb-6">
+                            <h2 className="text-xl font-bold uppercase underline">Laporan Keuangan Kas PHBI</h2>
+                            <p>Per Tanggal: {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                        </div>
+                        <table className="mb-6">
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Tanggal</th>
+                                    <th>Uraian Transaksi</th>
+                                    <th>Kategori</th>
+                                    <th>Masuk</th>
+                                    <th>Keluar</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {transactions.map((t, i) => (
+                                    <tr key={i}>
+                                        <td className="text-center">{i + 1}</td>
+                                        <td>{t.date}</td>
+                                        <td>{t.description}</td>
+                                        <td>{t.category || 'Umum'}</td>
+                                        <td className="text-right">{t.type === 'in' ? formatCurrency(t.amount) : '-'}</td>
+                                        <td className="text-right">{t.type === 'out' ? formatCurrency(t.amount) : '-'}</td>
+                                    </tr>
+                                ))}
+                                <tr className="font-bold bg-gray-50">
+                                    <td colSpan="4" className="text-right">TOTAL</td>
+                                    <td className="text-right">{formatCurrency(totals.in)}</td>
+                                    <td className="text-right">{formatCurrency(totals.out)}</td>
+                                </tr>
+                                <tr className="font-bold bg-green-50">
+                                    <td colSpan="4" className="text-right">SALDO AKHIR</td>
+                                    <td colSpan="2" className="text-center">{formatCurrency(totals.balance)}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
                     <div className="no-print marquee-container">
                         <div className="marquee-content">
-                            <span className="mx-8">Selamat Datang di Portal Keuangan & Galeri PHBI Mabda'il Falah Tangerang</span>
+                            <span className="mx-8">Saldo Kas Saat Ini: {formatCurrency(totals.balance)}</span>
                             <span className="mx-8">•</span>
-                            <span className="mx-8">Saldo Saat Ini: {formatCurrency(totals.balance)}</span>
-                            <span className="mx-8">•</span>
-                            <span className="mx-8">Lokasi: Kp. Tanjakan, Rajeg, Tangerang</span>
+                            <span className="mx-8">Selamat Datang di Portal Resmi PHBI Mabda'il Falah Tangerang</span>
                         </div>
                     </div>
 
-                    <div className="flex flex-1 overflow-hidden">
+                    <div className="no-print flex flex-1 overflow-hidden">
                         {/* Sidebar */}
                         <aside className={`fixed inset-y-0 left-0 z-[60] w-64 bg-white border-r transition-transform duration-300 lg:translate-x-0 lg:static ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-                            <div className="p-6 border-b flex justify-between items-center lg:hidden">
-                                <span className="font-black text-xs text-green-700 uppercase tracking-widest">Menu Utama</span>
-                                <button onClick={() => setSidebarOpen(false)}><i data-lucide="x" className="w-5 h-5"></i></button>
-                            </div>
-                            <div className="p-4 space-y-1">
-                                <NavButton targetView="dashboard" icon="layout-grid" label="Dashboard" />
-                                <NavButton targetView="history" icon="list" label="Riwayat Kas" />
-                                <NavButton targetView="galeri" icon="image" label="Galeri Kegiatan" />
-                                <NavButton targetView="struktur" icon="users" label="Kepengurusan" />
-                                <NavButton targetView="kontak" icon="phone-call" label="Kontak Kami" />
-                                
+                            <div className="p-4 space-y-1 h-full overflow-y-auto custom-scrollbar flex flex-col">
+                                <div className="mb-4">
+                                    <p className="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Menu Utama</p>
+                                    <button onClick={() => {setView('dashboard'); setSidebarOpen(false)}} className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm transition-all ${view === 'dashboard' ? 'active-nav' : 'text-slate-500 hover:bg-slate-50'}`}>
+                                        <i data-lucide="layout-grid" className="w-5 h-5"></i> Dashboard
+                                    </button>
+                                    <button onClick={() => {setView('history'); setSidebarOpen(false)}} className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm transition-all ${view === 'history' ? 'active-nav' : 'text-slate-500 hover:bg-slate-50'}`}>
+                                        <i data-lucide="file-text" className="w-5 h-5"></i> Laporan Kas
+                                    </button>
+                                    <button onClick={() => {setView('galeri'); setSidebarOpen(false)}} className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm transition-all ${view === 'galeri' ? 'active-nav' : 'text-slate-500 hover:bg-slate-50'}`}>
+                                        <i data-lucide="image" className="w-5 h-5"></i> Dokumentasi
+                                    </button>
+                                    <button onClick={() => {setView('struktur'); setSidebarOpen(false)}} className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm transition-all ${view === 'struktur' ? 'active-nav' : 'text-slate-500 hover:bg-slate-50'}`}>
+                                        <i data-lucide="users" className="w-5 h-5"></i> Pengurus
+                                    </button>
+                                    <button onClick={() => {setView('kontak'); setSidebarOpen(false)}} className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm transition-all ${view === 'kontak' ? 'active-nav' : 'text-slate-500 hover:bg-slate-50'}`}>
+                                        <i data-lucide="phone-call" className="w-5 h-5"></i> Hubungi Kami
+                                    </button>
+                                </div>
+
                                 {isAdmin && (
-                                    <div className="pt-4 mt-4 border-t border-slate-100 space-y-2">
+                                    <div className="pt-4 border-t border-slate-100">
                                         <p className="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Panel Admin</p>
-                                        <NavButton targetView="add" icon="plus-circle" label="Input Transaksi" isAction />
-                                        <NavButton targetView="input-konten" icon="upload-cloud" label="Input Galeri" isAction />
+                                        <button onClick={() => {setView('add-kas'); setSidebarOpen(false)}} className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm transition-all mb-1 ${view === 'add-kas' ? 'active-admin' : 'text-blue-600 bg-blue-50'}`}>
+                                            <i data-lucide="plus-circle" className="w-5 h-5"></i> Tambah Kas
+                                        </button>
+                                        <button onClick={() => {setView('add-galeri'); setSidebarOpen(false)}} className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm transition-all mb-1 ${view === 'add-galeri' ? 'active-admin' : 'text-purple-600 bg-purple-50'}`}>
+                                            <i data-lucide="camera" className="w-5 h-5"></i> Tambah Dokumentasi
+                                        </button>
+                                        <button onClick={() => {setView('add-pengurus'); setSidebarOpen(false)}} className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm transition-all mb-1 ${view === 'add-pengurus' ? 'active-admin' : 'text-amber-600 bg-amber-50'}`}>
+                                            <i data-lucide="user-plus" className="w-5 h-5"></i> Update Pengurus
+                                        </button>
                                     </div>
                                 )}
-                            </div>
-                            <div className="absolute bottom-6 left-4 right-4">
-                                {!isAdmin ? (
-                                    <button onClick={() => setShowLoginModal(true)} className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-xs tracking-widest flex items-center justify-center gap-2"><i data-lucide="lock" className="w-4 h-4"></i> LOGIN ADMIN</button>
-                                ) : (
-                                    <button onClick={() => setIsAdmin(false)} className="w-full py-4 bg-red-50 text-red-600 rounded-2xl font-black text-xs flex items-center justify-center gap-2"><i data-lucide="log-out" className="w-4 h-4"></i> KELUAR</button>
-                                )}
+
+                                <div className="mt-auto pt-6">
+                                    {!isAdmin ? (
+                                        <button onClick={() => setShowLoginModal(true)} className="w-full py-3 bg-slate-900 text-white rounded-2xl font-black text-[10px] tracking-widest flex items-center justify-center gap-2">
+                                            <i data-lucide="lock" className="w-4 h-4"></i> LOGIN ADMIN
+                                        </button>
+                                    ) : (
+                                        <button onClick={() => setIsAdmin(false)} className="w-full py-3 bg-red-50 text-red-600 rounded-2xl font-black text-[10px] flex items-center justify-center gap-2">
+                                            <i data-lucide="log-out" className="w-4 h-4"></i> KELUAR
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </aside>
 
-                        {/* Main Content */}
-                        <div className="flex-1 flex flex-col overflow-y-auto bg-[#F8FAFC]">
-                            <main className="flex-1 p-4 md:p-8">
-                                {view === 'dashboard' && (
-                                    <div className="max-w-5xl mx-auto space-y-6">
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                            <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm">
-                                                <div className="w-12 h-12 bg-green-100 text-green-700 rounded-2xl flex items-center justify-center mb-4"><i data-lucide="wallet"></i></div>
-                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Saldo Saat Ini</p>
-                                                <h3 className="text-2xl font-black text-slate-800 tabular-nums mt-1">{formatCurrency(totals.balance)}</h3>
-                                            </div>
-                                            <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm">
-                                                <div className="w-12 h-12 bg-blue-100 text-blue-700 rounded-2xl flex items-center justify-center mb-4"><i data-lucide="arrow-down-to-dot"></i></div>
-                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Pemasukan</p>
-                                                <h3 className="text-2xl font-black text-blue-600 tabular-nums mt-1">{formatCurrency(totals.in)}</h3>
-                                            </div>
-                                            <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm">
-                                                <div className="w-12 h-12 bg-red-100 text-red-700 rounded-2xl flex items-center justify-center mb-4"><i data-lucide="arrow-up-from-dot"></i></div>
-                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Pengeluaran</p>
-                                                <h3 className="text-2xl font-black text-red-600 tabular-nums mt-1">{formatCurrency(totals.out)}</h3>
-                                            </div>
-                                        </div>
+                        {/* Main Content Area */}
+                        <main className="flex-1 overflow-y-auto bg-[#F8FAFC] p-4 md:p-8 relative">
+                            {loading && (
+                                <div className="absolute inset-0 bg-white/60 z-50 flex items-center justify-center backdrop-blur-sm">
+                                    <div className="w-10 h-10 border-4 border-green-700 border-t-transparent rounded-full animate-spin"></div>
+                                </div>
+                            )}
 
-                                        <div className="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden p-6">
-                                            <div className="flex items-center justify-between mb-6">
-                                                <h3 className="font-black text-slate-800">Aktivitas Terakhir</h3>
-                                                <button onClick={() => setView('history')} className="text-[10px] font-black text-green-700 bg-green-50 px-3 py-1.5 rounded-lg uppercase">Semua</button>
-                                            </div>
-                                            <div className="space-y-4">
-                                                {transactions.slice(0, 5).map((t, i) => (
-                                                    <div key={i} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
-                                                        <div className="flex items-center gap-4">
-                                                            <div className={`p-3 rounded-xl ${t.type === 'in' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}><i data-lucide={t.type === 'in' ? 'arrow-down-left' : 'arrow-up-right'}></i></div>
-                                                            <div>
-                                                                <p className="font-bold text-sm text-slate-800 leading-tight">{t.description}</p>
-                                                                <p className="text-[10px] font-bold text-slate-400 mt-1">{t.category} • {new Date(t.date).toLocaleDateString('id-ID')}</p>
-                                                            </div>
-                                                        </div>
-                                                        <p className={`font-black text-sm ${t.type === 'in' ? 'text-green-600' : 'text-red-600'}`}>{t.type === 'in' ? '+' : '-'} {formatCurrency(t.amount).replace('Rp', '')}</p>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {view === 'history' && (
-                                    <div className="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden">
-                                        <div className="p-6 border-b flex flex-col md:flex-row gap-4 items-center justify-between">
-                                            <div className="relative w-full max-sm:max-w-none max-w-sm">
-                                                <i data-lucide="search" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4"></i>
-                                                <input type="text" placeholder="Cari riwayat..." className="w-full pl-11 pr-4 py-3 bg-slate-50 rounded-2xl text-sm font-bold outline-none" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-                                            </div>
-                                            <button onClick={() => window.print()} className="px-6 py-3 bg-slate-900 text-white rounded-2xl font-black text-xs flex items-center gap-2"><i data-lucide="printer" className="w-4 h-4"></i> CETAK</button>
-                                        </div>
-                                        <div className="overflow-x-auto">
-                                            <table className="w-full">
-                                                <thead className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase text-left">
-                                                    <tr><th className="p-6">Tanggal</th><th className="p-6">Keterangan</th><th className="p-6 text-right">Nominal</th></tr>
-                                                </thead>
-                                                <tbody className="divide-y divide-slate-50">
-                                                    {filteredTransactions.map((t, i) => (
-                                                        <tr key={i} className="hover:bg-slate-50">
-                                                            <td className="p-6 text-xs font-bold text-slate-500">{new Date(t.date).toLocaleDateString('id-ID')}</td>
-                                                            <td className="p-6 text-sm font-bold text-slate-800">{t.description}</td>
-                                                            <td className={`p-6 text-right font-black text-sm ${t.type === 'in' ? 'text-green-600' : 'text-red-600'}`}>{formatCurrency(t.amount)}</td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {view === 'galeri' && (
-                                    <div className="max-w-6xl mx-auto">
-                                        <div className="flex items-center justify-between mb-8">
-                                            <h2 className="text-2xl font-black text-slate-800">Galeri Kegiatan</h2>
-                                            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{galleryItems.length} Album</span>
-                                        </div>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                            {galleryItems.length === 0 ? (
-                                                <div className="col-span-full py-20 text-center">
-                                                    <i data-lucide="image-off" className="w-12 h-12 text-slate-300 mx-auto mb-4"></i>
-                                                    <p className="font-bold text-slate-400">Belum ada foto kegiatan.</p>
+                            {view === 'dashboard' && (
+                                <div className="max-w-5xl mx-auto space-y-8">
+                                    <div className="bg-gradient-to-br from-green-800 to-green-600 p-8 md:p-12 rounded-[48px] text-white shadow-2xl shadow-green-100 relative overflow-hidden">
+                                        <div className="relative z-10">
+                                            <h2 className="text-3xl md:text-5xl font-black mb-4">Ringkasan Kas PHBI</h2>
+                                            <p className="text-green-50 opacity-80 font-bold mb-8 uppercase tracking-widest text-xs">Update Terakhir: {new Date().toLocaleDateString()}</p>
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                                <div className="bg-white/10 backdrop-blur-md p-6 rounded-3xl">
+                                                    <p className="text-[10px] font-black uppercase opacity-60">Total Masuk</p>
+                                                    <h3 className="text-xl font-black mt-1">{formatCurrency(totals.in)}</h3>
                                                 </div>
-                                            ) : (
-                                                galleryItems.map((item) => (
-                                                    <div key={item.id} className="gallery-card bg-white rounded-[32px] overflow-hidden border border-slate-100 shadow-sm group cursor-pointer">
-                                                        <div className="relative h-56 overflow-hidden">
-                                                            <img src={item.imageUrl} alt={item.judul} className="w-full h-full object-cover transition-transform duration-700" />
-                                                            <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1.5 rounded-xl text-[10px] font-black text-green-800 uppercase shadow-sm">
-                                                                {new Date(item.tanggal).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
-                                                            </div>
-                                                        </div>
-                                                        <div className="p-6">
-                                                            <h4 className="font-extrabold text-slate-800 mb-2 group-hover:text-green-700 transition-colors">{item.judul}</h4>
-                                                            <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
-                                                                <i data-lucide="calendar" className="w-3 h-3"></i> Tgl: {item.tanggal}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                ))
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {view === 'kontak' && (
-                                    <div className="max-w-2xl mx-auto py-10">
-                                        <div className="bg-white rounded-[40px] border border-slate-100 p-10 shadow-xl text-center">
-                                            <div className="w-20 h-20 bg-green-100 text-green-700 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                                                <i data-lucide="phone-call" className="w-10 h-10"></i>
-                                            </div>
-                                            <h2 className="text-2xl font-black text-slate-800 mb-2">Hubungi Kami</h2>
-                                            <p className="text-slate-500 font-bold mb-10 text-sm">Punya pertanyaan atau ingin berdonasi secara offline?</p>
-                                            
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
-                                                <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100">
-                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">WhatsApp Official</p>
-                                                    <p className="font-black text-lg text-slate-800">+62 812-3456-7890</p>
+                                                <div className="bg-white/10 backdrop-blur-md p-6 rounded-3xl">
+                                                    <p className="text-[10px] font-black uppercase opacity-60">Total Keluar</p>
+                                                    <h3 className="text-xl font-black mt-1">{formatCurrency(totals.out)}</h3>
                                                 </div>
-                                                <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100">
-                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Email Media</p>
-                                                    <p className="font-black text-lg text-slate-800">info@mabdailfalah.com</p>
-                                                </div>
-                                                <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 md:col-span-2">
-                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Alamat Fisik</p>
-                                                    <p className="font-extrabold text-slate-800">Kp. Tanjakan RT. 009/002 Desa Tanjakan, Kec. Rajeg, Tangerang, Banten 15510</p>
+                                                <div className="bg-white p-6 rounded-3xl text-green-900">
+                                                    <p className="text-[10px] font-black uppercase opacity-60">Sisa Saldo</p>
+                                                    <h3 className="text-xl font-black mt-1">{formatCurrency(totals.balance)}</h3>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                )}
-
-                                {view === 'input-konten' && isAdmin && (
-                                    <div className="max-w-xl mx-auto bg-white p-8 rounded-[40px] border border-slate-100 shadow-xl">
-                                        <div className="flex items-center gap-4 mb-8">
-                                            <div className="w-12 h-12 bg-blue-100 text-blue-700 rounded-2xl flex items-center justify-center"><i data-lucide="upload-cloud"></i></div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="bg-white p-8 rounded-[40px] border border-slate-100 flex items-center justify-between group cursor-pointer" onClick={() => setView('history')}>
                                             <div>
-                                                <h2 className="text-xl font-black text-slate-800 leading-none">Input Galeri</h2>
-                                                <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">Tambahkan Album Kegiatan Baru</p>
+                                                <h4 className="font-black text-slate-800 text-lg">Laporan Lengkap</h4>
+                                                <p className="text-xs text-slate-400 font-bold mt-1 uppercase tracking-wider">Lihat Semua Transaksi</p>
+                                            </div>
+                                            <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center group-hover:bg-green-50 transition-colors">
+                                                <i data-lucide="arrow-right" className="text-slate-400 group-hover:text-green-600"></i>
                                             </div>
                                         </div>
-                                        <form onSubmit={handleGallerySubmit} className="space-y-6">
+                                        <div className="bg-white p-8 rounded-[40px] border border-slate-100 flex items-center justify-between group cursor-pointer" onClick={() => setView('galeri')}>
                                             <div>
-                                                <label className="text-[10px] font-black text-slate-400 uppercase ml-4 mb-2 block tracking-widest">Judul Kegiatan</label>
-                                                <input type="text" required placeholder="Contoh: PHBI Isra Mi'raj 1447H" className="w-full p-4 bg-slate-50 rounded-2xl font-bold border-none outline-none focus:ring-2 ring-blue-500" value={galleryFormData.title} onChange={(e) => setGalleryFormData({...galleryFormData, title: e.target.value})} />
+                                                <h4 className="font-black text-slate-800 text-lg">Dokumentasi</h4>
+                                                <p className="text-xs text-slate-400 font-bold mt-1 uppercase tracking-wider">Foto Kegiatan Terbaru</p>
                                             </div>
-                                            <div>
-                                                <label className="text-[10px] font-black text-slate-400 uppercase ml-4 mb-2 block tracking-widest">URL Gambar (Link)</label>
-                                                <input type="url" required placeholder="https://domain.com/gambar.jpg" className="w-full p-4 bg-slate-50 rounded-2xl font-bold border-none outline-none focus:ring-2 ring-blue-500" value={galleryFormData.imageUrl} onChange={(e) => setGalleryFormData({...galleryFormData, imageUrl: e.target.value})} />
+                                            <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center group-hover:bg-purple-50 transition-colors">
+                                                <i data-lucide="camera" className="text-slate-400 group-hover:text-purple-600"></i>
                                             </div>
-                                            <div>
-                                                <label className="text-[10px] font-black text-slate-400 uppercase ml-4 mb-2 block tracking-widest">Tanggal Kegiatan</label>
-                                                <input type="date" required className="w-full p-4 bg-slate-50 rounded-2xl font-bold border-none outline-none focus:ring-2 ring-blue-500" value={galleryFormData.date} onChange={(e) => setGalleryFormData({...galleryFormData, date: e.target.value})} />
-                                            </div>
-                                            <button type="submit" disabled={loading} className="w-full py-5 bg-blue-600 text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg shadow-blue-200 disabled:opacity-50">
-                                                {loading ? 'Mengunggah...' : 'Terbitkan Ke Galeri'}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {view === 'history' && (
+                                <div className="max-w-6xl mx-auto space-y-6">
+                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                        <div>
+                                            <h2 className="text-2xl font-black text-slate-800">Riwayat Kas PHBI</h2>
+                                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Laporan Transaksi Masuk & Keluar</p>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <button onClick={handlePrint} className="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-slate-200">
+                                                <i data-lucide="printer" className="w-4 h-4"></i> Cetak Laporan
                                             </button>
-                                        </form>
+                                        </div>
                                     </div>
-                                )}
+                                    <div className="bg-white rounded-[40px] overflow-hidden border border-slate-100 shadow-sm overflow-x-auto">
+                                        <table className="w-full text-left border-collapse min-w-[700px]">
+                                            <thead className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase">
+                                                <tr>
+                                                    <th className="p-6">Tanggal</th>
+                                                    <th className="p-6">Keterangan</th>
+                                                    <th className="p-6">Kategori</th>
+                                                    <th className="p-6 text-right">Debit (+)</th>
+                                                    <th className="p-6 text-right">Kredit (-)</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-50 text-sm">
+                                                {transactions.map((t, i) => (
+                                                    <tr key={i} className="hover:bg-slate-50/50 transition-colors">
+                                                        <td className="p-6 font-bold text-slate-400 whitespace-nowrap">{t.date}</td>
+                                                        <td className="p-6 font-bold text-slate-800">{t.description}</td>
+                                                        <td className="p-6">
+                                                            <span className="px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[9px] font-black uppercase tracking-tight">
+                                                                {t.category || 'Donasi'}
+                                                            </span>
+                                                        </td>
+                                                        <td className={`p-6 text-right font-black ${t.type === 'in' ? 'text-green-600' : 'text-slate-300'}`}>
+                                                            {t.type === 'in' ? formatCurrency(t.amount) : '-'}
+                                                        </td>
+                                                        <td className={`p-6 text-right font-black ${t.type === 'out' ? 'text-red-500' : 'text-slate-300'}`}>
+                                                            {t.type === 'out' ? formatCurrency(t.amount) : '-'}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
 
-                                {view === 'struktur' && (
-                                    <div className="max-w-2xl mx-auto py-10 bg-white rounded-[40px] border border-slate-100 p-10 text-center shadow-sm">
-                                        <h2 className="text-2xl font-black text-slate-800 mb-8">Struktur Pengelola PHBI</h2>
-                                        <div className="space-y-6 text-left">
-                                            {[{role: 'Ketua Pelaksana', name: 'Ust. Fulanuddin'}, {role: 'Bendahara', name: 'Kang Fulan Arifin'}, {role: 'Sekretaris', name: 'Ustz. Fulanah'}].map((p, i) => (
-                                                <div key={i} className="flex justify-between items-center border-b border-slate-50 pb-4">
-                                                    <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">{p.role}</span>
-                                                    <span className="font-extrabold text-slate-700">{p.name}</span>
+                            {view === 'add-kas' && (
+                                <div className="max-w-xl mx-auto bg-white p-8 md:p-12 rounded-[48px] border border-slate-100 shadow-xl">
+                                    <h3 className="text-xl font-black text-slate-800 mb-8">Catat Kas Baru</h3>
+                                    <form onSubmit={handleKasSubmit} className="space-y-6">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div onClick={() => setFormData({...formData, type: 'in'})} className={`p-4 rounded-2xl border-2 cursor-pointer transition-all text-center ${formData.type === 'in' ? 'border-green-600 bg-green-50' : 'border-slate-50 bg-slate-50 opacity-40'}`}>
+                                                <i data-lucide="arrow-down-left" className="text-green-600 mb-2"></i>
+                                                <p className="text-[10px] font-black uppercase">Pemasukan</p>
+                                            </div>
+                                            <div onClick={() => setFormData({...formData, type: 'out'})} className={`p-4 rounded-2xl border-2 cursor-pointer transition-all text-center ${formData.type === 'out' ? 'border-red-600 bg-red-50' : 'border-slate-50 bg-slate-50 opacity-40'}`}>
+                                                <i data-lucide="arrow-up-right" className="text-red-600 mb-2"></i>
+                                                <p className="text-[10px] font-black uppercase">Pengeluaran</p>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase ml-2 mb-2 block">Keterangan Transaksi</label>
+                                            <input required type="text" className="w-full p-5 bg-slate-50 rounded-[24px] font-bold outline-none" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-6">
+                                            <div>
+                                                <label className="text-[10px] font-black text-slate-400 uppercase ml-2 mb-2 block">Nominal (Rp)</label>
+                                                <input required type="number" className="w-full p-5 bg-slate-50 rounded-[24px] font-bold outline-none" value={formData.amount} onChange={e => setFormData({...formData, amount: e.target.value})} />
+                                            </div>
+                                            <div>
+                                                <label className="text-[10px] font-black text-slate-400 uppercase ml-2 mb-2 block">Kategori</label>
+                                                <select className="w-full p-5 bg-slate-50 rounded-[24px] font-bold outline-none" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}>
+                                                    <option value="Donasi">Donasi</option>
+                                                    <option value="Kegiatan">Kegiatan</option>
+                                                    <option value="Operasional">Operasional</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <button type="submit" className="w-full py-6 bg-slate-900 text-white rounded-[24px] font-black uppercase text-[11px] tracking-widest shadow-xl">Simpan Transaksi</button>
+                                    </form>
+                                </div>
+                            )}
+
+                            {view === 'add-galeri' && (
+                                <div className="max-w-xl mx-auto bg-white p-8 md:p-12 rounded-[48px] border border-slate-100 shadow-xl">
+                                    <h3 className="text-xl font-black text-slate-800 mb-8">Tambah Dokumentasi Baru</h3>
+                                    <form onSubmit={handleGaleriSubmit} className="space-y-6">
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase ml-2 mb-2 block">Judul Kegiatan</label>
+                                            <input required type="text" className="w-full p-5 bg-slate-50 rounded-[24px] font-bold outline-none" value={galleryForm.judul} onChange={e => setGalleryForm({...galleryForm, judul: e.target.value})} />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase ml-2 mb-2 block">URL Gambar / Video</label>
+                                            <input required type="text" placeholder="https://..." className="w-full p-5 bg-slate-50 rounded-[24px] font-bold outline-none" value={galleryForm.imageUrl} onChange={e => setGalleryForm({...galleryForm, imageUrl: e.target.value})} />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase ml-2 mb-2 block">Tanggal</label>
+                                            <input required type="date" className="w-full p-5 bg-slate-50 rounded-[24px] font-bold outline-none" value={galleryForm.tanggal} onChange={e => setGalleryForm({...galleryForm, tanggal: e.target.value})} />
+                                        </div>
+                                        <button type="submit" className="w-full py-6 bg-purple-600 text-white rounded-[24px] font-black uppercase text-[11px] tracking-widest shadow-xl">Upload Dokumentasi</button>
+                                    </form>
+                                </div>
+                            )}
+
+                            {view === 'add-pengurus' && (
+                                <div className="max-w-xl mx-auto bg-white p-8 md:p-12 rounded-[48px] border border-slate-100 shadow-xl">
+                                    <h3 className="text-xl font-black text-slate-800 mb-8">Tambah / Update Pengurus</h3>
+                                    <form onSubmit={handlePengurusSubmit} className="space-y-6">
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase ml-2 mb-2 block">Nama Lengkap</label>
+                                            <input required type="text" className="w-full p-5 bg-slate-50 rounded-[24px] font-bold outline-none" value={pengurusForm.nama} onChange={e => setPengurusForm({...pengurusForm, nama: e.target.value})} />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase ml-2 mb-2 block">Jabatan</label>
+                                            <input required type="text" placeholder="Contoh: Bendahara I" className="w-full p-5 bg-slate-50 rounded-[24px] font-bold outline-none" value={pengurusForm.sebagai} onChange={e => setPengurusForm({...pengurusForm, sebagai: e.target.value})} />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase ml-2 mb-2 block">Kontak / WhatsApp</label>
+                                            <input required type="text" className="w-full p-5 bg-slate-50 rounded-[24px] font-bold outline-none" value={pengurusForm.kontak} onChange={e => setPengurusForm({...pengurusForm, kontak: e.target.value})} />
+                                        </div>
+                                        <button type="submit" className="w-full py-6 bg-amber-600 text-white rounded-[24px] font-black uppercase text-[11px] tracking-widest shadow-xl">Simpan Data Pengurus</button>
+                                    </form>
+                                </div>
+                            )}
+
+                            {view === 'galeri' && (
+                                <div className="max-w-5xl mx-auto">
+                                    <div className="mb-10">
+                                        <h2 className="text-2xl font-black text-slate-800">Dokumentasi Kegiatan</h2>
+                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Momen PHBI Mabda'il Falah</p>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        {galleryItems.map((item, i) => (
+                                            <a key={i} href={item.imageUrl} target="_blank" rel="noopener noreferrer" className="bg-white rounded-[40px] overflow-hidden shadow-sm border border-slate-100 group transition-all hover:shadow-xl hover:-translate-y-2 block">
+                                                <div className="h-56 overflow-hidden relative">
+                                                    <img src={item.imageUrl} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt={item.judul} />
+                                                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                        <div className="bg-white/90 p-3 rounded-2xl">
+                                                            <i data-lucide="external-link" className="w-6 h-6 text-green-700"></i>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            ))}
-                                        </div>
+                                                <div className="p-6">
+                                                    <p className="text-[9px] font-black text-green-600 uppercase mb-2 tracking-widest">{item.tanggal}</p>
+                                                    <h4 className="font-black text-slate-800">{item.judul}</h4>
+                                                    <div className="mt-4 flex items-center gap-1 text-[10px] font-bold text-slate-400 uppercase">
+                                                        <span>Buka Link</span>
+                                                        <i data-lucide="chevron-right" className="w-3 h-3"></i>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        ))}
                                     </div>
-                                )}
+                                </div>
+                            )}
 
-                                {view === 'add' && isAdmin && (
-                                    <div className="max-w-xl mx-auto bg-white p-8 rounded-[40px] border border-slate-100 shadow-xl">
-                                        <h2 className="text-2xl font-black text-slate-800 mb-8">Input Transaksi Kas</h2>
-                                        <form onSubmit={handleSubmit} className="space-y-6">
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <select className="w-full p-4 bg-slate-50 rounded-2xl font-bold border-none outline-none" value={formData.type} onChange={(e) => setFormData({...formData, type: e.target.value})}>
-                                                    <option value="in">PEMASUKAN</option><option value="out">PENGELUARAN</option>
-                                                </select>
-                                                <select className="w-full p-4 bg-slate-50 rounded-2xl font-bold border-none outline-none" value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})}>
-                                                    {['Donasi', 'Konsumsi', 'Perlengkapan', 'Operasional'].map(c => <option key={c} value={c}>{c}</option>)}
-                                                </select>
-                                            </div>
-                                            <input type="text" required placeholder="Keterangan..." className="w-full p-4 bg-slate-50 rounded-2xl font-bold border-none outline-none" value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} />
-                                            <input type="number" required placeholder="Nominal Rp..." className="w-full p-4 bg-slate-50 rounded-2xl font-black text-xl border-none outline-none" value={formData.amount} onChange={(e) => setFormData({...formData, amount: e.target.value})} />
-                                            <button type="submit" disabled={loading} className="w-full py-5 bg-blue-600 text-white rounded-2xl font-black uppercase text-xs tracking-widest disabled:opacity-50">{loading ? 'Mengirim...' : 'Simpan Transaksi'}</button>
-                                        </form>
+                            {view === 'struktur' && (
+                                <div className="max-w-4xl mx-auto">
+                                    <div className="text-center mb-12">
+                                        <h2 className="text-3xl font-black text-slate-800">Struktur Pengurus</h2>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mt-2">Periode Berjalan</p>
                                     </div>
-                                )}
-                            </main>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                                        {pengurusList.map((p, i) => (
+                                            <div key={i} className="bg-white p-8 rounded-[40px] border border-slate-100 text-center shadow-sm">
+                                                <div className="w-20 h-20 bg-slate-50 rounded-[32px] flex items-center justify-center mx-auto mb-6">
+                                                    <i data-lucide="user" className="w-10 h-10 text-slate-300"></i>
+                                                </div>
+                                                <p className="text-[10px] font-black text-green-600 uppercase mb-1 tracking-widest">{p.sebagai}</p>
+                                                <h4 className="font-black text-slate-800 text-xl">{p.nama}</h4>
+                                                <p className="text-xs font-bold text-slate-400 mt-2">{p.kontak}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
 
-                            <footer className="no-print bg-white border-t border-slate-100 mt-auto">
-                                <div className="max-w-6xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
-                                    <div className="space-y-4">
-                                        <h4 className="text-green-800 font-black text-sm tracking-tight">PONPES MABDA'IL FALAH</h4>
-                                        <p className="text-slate-500 text-xs font-bold leading-relaxed max-w-xs mx-auto md:mx-0">
-                                            Lembaga Pendidikan Islam yang berfokus pada pembinaan karakter dan keilmuan agama berlandaskan Ahlussunnah wal Jama'ah.
-                                        </p>
+                            {view === 'kontak' && (
+                                <div className="max-w-5xl mx-auto space-y-12 text-center lg:text-left">
+                                    <div className="mb-10">
+                                        <h2 className="text-3xl font-black text-slate-800">Hubungi Kami</h2>
+                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Layanan Informasi & Infaq PHBI</p>
                                     </div>
-                                    <div className="space-y-4">
-                                        <h4 className="text-slate-800 font-black text-xs uppercase tracking-widest">Alamat Lengkap</h4>
-                                        <div className="flex flex-col gap-2 text-slate-500 text-xs font-bold">
-                                            <div className="flex items-center gap-2 justify-center md:justify-start">
-                                                <i data-lucide="map-pin" className="w-3 h-3 text-green-600"></i>
-                                                <span>Kp. Tanjakan RT. 009/002</span>
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                        <div className="space-y-6">
+                                            {/* Kartu Lokasi */}
+                                            <div className="bg-white p-8 rounded-[40px] border border-slate-100 flex items-start gap-6 shadow-sm">
+                                                <div className="w-14 h-14 bg-green-50 rounded-2xl flex items-center justify-center flex-shrink-0 text-green-700">
+                                                    <i data-lucide="map-pin"></i>
+                                                </div>
+                                                <div className="text-left">
+                                                    <h4 className="font-black text-slate-800 text-lg mb-1">Sekretariat</h4>
+                                                    <p className="text-sm font-bold text-slate-500 leading-relaxed">Jl. Raya Mabdail Falah No. 12, Tangerang, Banten.</p>
+                                                </div>
                                             </div>
-                                            <p className="ml-0 md:ml-5">Desa Tanjakan, Kec. Rajeg</p>
-                                            <p className="ml-0 md:ml-5">Kabupaten Tangerang, Banten 15510</p>
+
+                                            {/* Kartu WhatsApp - Interaktif */}
+                                            <a 
+                                                href={`https://wa.me/${WA_NUMBER}?text=Assalamu'alaikum%20PHBI%20Mabda'il%20Falah,%20saya%20ingin%20menanyakan%20seputar...`} 
+                                                target="_blank" 
+                                                rel="noopener noreferrer" 
+                                                className="bg-white p-8 rounded-[40px] border border-slate-100 flex items-start gap-6 shadow-sm hover:shadow-xl hover:border-green-200 transition-all group"
+                                            >
+                                                <div className="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center flex-shrink-0 text-blue-700 group-hover:bg-green-600 group-hover:text-white transition-colors">
+                                                    <i data-lucide="message-square"></i>
+                                                </div>
+                                                <div className="text-left">
+                                                    <h4 className="font-black text-slate-800 text-lg mb-1 group-hover:text-green-700 transition-colors">WhatsApp Kami</h4>
+                                                    <p className="text-sm font-bold text-slate-500 leading-relaxed">Klik di sini untuk mengirim pesan atau konfirmasi Infaq.</p>
+                                                    <div className="mt-4 inline-flex items-center gap-2 text-[10px] font-black text-green-600 uppercase bg-green-50 px-4 py-2 rounded-full">
+                                                        <span className="relative flex h-2 w-2">
+                                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                                                        </span>
+                                                        Chat Sekarang
+                                                    </div>
+                                                </div>
+                                            </a>
                                         </div>
-                                    </div>
-                                    <div className="space-y-4">
-                                        <h4 className="text-slate-800 font-black text-xs uppercase tracking-widest">Kontak & Sosmed</h4>
-                                        <div className="flex flex-col gap-2 text-slate-500 text-xs font-bold">
-                                            <div className="flex items-center gap-2 justify-center md:justify-start">
-                                                <i data-lucide="phone" className="w-3 h-3 text-green-600"></i>
-                                                <span>+62 812-XXXX-XXXX</span>
-                                            </div>
-                                            <div className="flex items-center gap-3 mt-2 justify-center md:justify-start">
-                                                <div className="p-2 bg-slate-50 rounded-lg text-slate-400 hover:text-green-600 cursor-pointer"><i data-lucide="instagram" className="w-4 h-4"></i></div>
-                                                <div className="p-2 bg-slate-50 rounded-lg text-slate-400 hover:text-green-600 cursor-pointer"><i data-lucide="facebook" className="w-4 h-4"></i></div>
-                                                <div className="p-2 bg-slate-50 rounded-lg text-slate-400 hover:text-green-600 cursor-pointer"><i data-lucide="globe" className="w-4 h-4"></i></div>
-                                            </div>
+                                        
+                                        {/* Peta */}
+                                        <div className="bg-white p-2 rounded-[48px] border border-slate-100 h-96 shadow-sm overflow-hidden">
+                                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d126906.87877983696!2d106.5292671!3d-6.1754407!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f8e853d2e38d%3A0x3015760a42e5420!2sTangerang%2C%20Tangerang%20City%2C%20Banten!5e0!3m2!1sen!2sid!4v1715678901234!5m2!1sen!2sid" className="w-full h-full rounded-[44px]" style={{border:0}} loading="lazy"></iframe>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="bg-slate-50 py-4 border-t border-slate-100">
-                                    <p className="text-center text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                                        © 2026 Mabdai'l Falah Media • Built with Love for Ummah
-                                    </p>
-                                </div>
-                            </footer>
-                        </div>
+                            )}
+                        </main>
                     </div>
 
-                    {/* Modal Login */}
+                    <footer className="no-print bg-white border-t border-slate-100 py-10 px-8 mt-auto">
+                        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6 text-center md:text-left">
+                            <div>
+                                <h4 className="text-xl font-black text-green-800 uppercase leading-none">PHBI MABDA'IL FALAH</h4>
+                                <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest mt-2">Sistem Informasi Manajemen Terpadu</p>
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">&copy; {new Date().getFullYear()} - Pengurus PHBI Mabda'il Falah</p>
+                            </div>
+                        </div>
+                    </footer>
+
+                    {/* Login Modal */}
                     {showLoginModal && (
-                        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4">
-                            <div className="bg-white w-full max-w-sm rounded-[40px] p-10 shadow-2xl relative">
-                                <button onClick={() => setShowLoginModal(false)} className="absolute top-8 right-8 text-slate-400"><i data-lucide="x"></i></button>
+                        <div className="fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-xl flex items-center justify-center p-4">
+                            <div className="bg-white w-full max-w-sm rounded-[48px] p-10 shadow-2xl relative animate-in fade-in zoom-in duration-300">
+                                <button onClick={() => setShowLoginModal(false)} className="absolute top-8 right-8 text-slate-300 hover:text-slate-900 transition-colors"><i data-lucide="x"></i></button>
                                 <div className="text-center mb-8">
-                                    <i data-lucide="fingerprint" className="w-12 h-12 text-green-700 mx-auto mb-4"></i>
-                                    <h3 className="text-xl font-black text-slate-800">Admin Login</h3>
+                                    <div className="w-16 h-16 bg-green-50 rounded-3xl flex items-center justify-center mx-auto mb-4">
+                                        <i data-lucide="shield-check" className="w-8 h-8 text-green-700"></i>
+                                    </div>
+                                    <h3 className="text-2xl font-black text-slate-800">Akses Admin</h3>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Gunakan Akun Pengurus</p>
                                 </div>
                                 <form onSubmit={handleLogin} className="space-y-4">
-                                    {loginError && <div className="p-3 bg-red-50 text-red-500 text-[10px] font-black rounded-xl text-center">{loginError}</div>}
-                                    <input type="text" placeholder="Username" className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none" value={loginData.username} onChange={(e) => setLoginData({...loginData, username: e.target.value})} />
-                                    <input type="password" placeholder="Password" className="w-full p-4 bg-slate-50 rounded-2xl font-bold outline-none" value={loginData.password} onChange={(e) => setLoginData({...loginData, password: e.target.value})} />
-                                    <button type="submit" className="w-full py-4 bg-green-700 text-white rounded-2xl font-black uppercase text-xs tracking-widest mt-4">Verifikasi Akses</button>
+                                    <input type="text" placeholder="Username" className="w-full p-5 bg-slate-50 rounded-[24px] font-bold outline-none border-2 border-transparent focus:border-green-100" value={loginData.username} onChange={e => setLoginData({...loginData, username: e.target.value})} />
+                                    <input type="password" placeholder="Password" className="w-full p-5 bg-slate-50 rounded-[24px] font-bold outline-none border-2 border-transparent focus:border-green-100" value={loginData.password} onChange={e => setLoginData({...loginData, password: e.target.value})} />
+                                    <button type="submit" className="w-full py-5 bg-slate-900 text-white rounded-[24px] font-black uppercase text-[11px] tracking-widest shadow-xl">Masuk</button>
                                 </form>
                             </div>
                         </div>
