@@ -1,705 +1,853 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="scroll-smooth">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pondok Pesantren Mabda'il Falah</title>
-    <meta name="description" content="Website resmi laporan kas dan pengurus PHBI Mabda'il Falah Tangerang. Transparansi keuangan, dokumentasi kegiatan, dan informasi pengurus.">
-<meta name="keywords" content="kas masjid, PHBI, Mabdail Falah, laporan keuangan masjid, Tangerang">
-<meta name="author" content="PHBI Mabda'il Falah">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pondok Pesantren Mabda'il Falah – Tangerang</title>
+  <meta name="description" content="Laporan keuangan transparan, struktur pengurus, dan dokumentasi kegiatan Pondok Pesantren Mabda'il Falah Kp. Tanjakan Rajeg, Tangerang."/>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 
-<meta property="og:title" content="Kas PHBI Mabda'il Falah">
-<meta property="og:description" content="Laporan kas dan kegiatan PHBI Mabda'il Falah">
-<meta property="og:type" content="website">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #f8fafc;
-            color: #1e293b;
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
-        }
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
-        .hero-gradient {
-            background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
-        }
+    :root {
+      --primary: #059669;
+      --primary-dark: #064e3b;
+      --accent: #fbbf24;
+      /* Warna Teks yang lebih nyaman */
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --bg-light: #f8fafc;
+    }
 
-        .glass {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-        }
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      background: var(--bg-light);
+      color: var(--text-main);
+      margin: 0;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
 
-        .nav-link-active {
-            color: #065f46;
-            border-bottom: 2px solid #065f46;
-        }
+    .dark body {
+      background: #0f172a;
+      color: #f1f5f9;
+    }
 
-        ::-webkit-scrollbar {
-            width: 5px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #059669;
-            border-radius: 10px;
-        }
+    .hero-gradient {
+      background: linear-gradient(135deg, #064e3b 0%, #059669 50%, #065f46 100%);
+    }
 
-        .bg-grid {
-            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
-            background-size: 30px 30px;
-        }
+    .glass {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
 
-        .profile-card:hover .profile-img {
-            transform: scale(1.05);
-        }
+    .dark .glass {
+      background: rgba(15, 23, 42, 0.9);
+    }
 
-        .admin-tab-active {
-            background-color: #064e3b;
-            color: white;
-            box-shadow: 0 10px 15px -3px rgba(6, 78, 59, 0.2);
-        }
+    .card-hover {
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .card-hover:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+    }
 
-        .logout-btn:hover {
-            background-color: #fee2e2;
-            color: #ef4444;
-        }
+    .nav-link {
+      position: relative;
+    }
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 2px;
+      bottom: -4px;
+      left: 0;
+      background-color: var(--primary);
+      transition: width 0.3s ease;
+    }
+    .nav-link.active::after {
+      width: 100%;
+    }
 
-        .text-income { color: #059669; }
-        .text-expense { color: #dc2626; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; }
 
-        @keyframes marquee {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-    </style>
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+      animation: fadeIn 0.5s ease forwards;
+    }
+  </style>
 </head>
 <body>
-    <div id="root"></div>
-    <noscript>
-  <h1>Kas PHBI Mabda'il Falah</h1>
-  <p>Website ini berisi laporan kas, pengurus, dan dokumentasi kegiatan PHBI Mabda'il Falah di Tangerang.</p>
-    </noscript>
+  <div id="root"></div>
 
-    <script type="text/babel">
-        const { useState, useEffect, useMemo } = React;
+  <script type="text/babel">
+    const { useState, useEffect, useMemo, useCallback } = React;
 
-        const GSHEET_URL = "https://script.google.com/macros/s/AKfycbzZxvWihnTIBa8RUiLYiyA1bQBdfBtehVA4OmkS5COaU7jjM83nmxFhcXfn5Yd1fh-Q/exec"; 
-        const ADMIN_USER = "mabdail_admin";
-        const ADMIN_PASS = "Mabda2026!PHBI";
+    const API_URL = "https://script.google.com/macros/s/AKfycbzsCcABFqUDG7yrIvuEwNRJ9-1RP9eSGqWlpR1qctg0wRLJtmWnjpXIj8W8PGwMShBX/exec";
+    const TOKEN_KEY = "mabdail_admin_token_v2";
 
-        const App = () => {
-            const [view, setView] = useState('beranda'); 
-            const [isAdmin, setIsAdmin] = useState(false);
-            const [showLogin, setShowLogin] = useState(false);
-            const [isMenuOpen, setIsMenuOpen] = useState(false);
-            const [showPassword, setShowPassword] = useState(false);
-            const [currentTime, setCurrentTime] = useState(new Date());
-            
-            const [transactions, setTransactions] = useState([]);
-            const [gallery, setGallery] = useState([]);
-            const [pengurus, setPengurus] = useState([]);
-            const [infoIndex, setInfoIndex] = useState(0);
-            const [isLoading, setIsLoading] = useState(false);
+    const App = () => {
+      const [view, setView] = useState("beranda");
+      const [darkMode, setDarkMode] = useState(false);
+      const [token, setToken] = useState(localStorage.getItem(TOKEN_KEY) || null);
+      const [isAdmin, setIsAdmin] = useState(!!localStorage.getItem(TOKEN_KEY));
 
-            const [adminTab, setAdminTab] = useState('kas'); 
-            const [editingId, setEditingId] = useState(null);
-            const [formData, setFormData] = useState({});
+      const [kasData, setKasData] = useState([]);
+      const [galeriData, setGaleriData] = useState([]);
+      const [pengurusData, setPengurusData] = useState([]);
 
-            const infoHighlights = useMemo(() => [
-                { icon: 'info', text: "Selamat Datang di Portal Resmi Mabda'il Falah" },
-                { icon: 'map-pin', text: "Kp. Tanjakan Rajeg, Tangerang, Banten" },
-                { icon: 'graduation-cap', text: "Penerimaan Santri Baru (PSB) 2026/2027 Telah Dibuka" },
-                { icon: 'megaphone', text: "Ayo Berinfaq untuk Pembangunan Fasilitas Santri" },
-                { icon: 'shield-check', text: "Menjaga Tradisi, Membangun Generasi Qur'ani" }
-            ], []);
+      const [loading, setLoading] = useState(true);
+      const [actionLoading, setActionLoading] = useState(false);
+      const [errorMsg, setErrorMsg] = useState(null);
 
-            useEffect(() => {
-                fetchAllData();
-                const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-                const infoTimer = setInterval(() => {
-                    setInfoIndex((prev) => (prev + 1) % infoHighlights.length);
-                }, 5000);
+      const [adminTab, setAdminTab] = useState("kas");
+      const [editingItem, setEditingItem] = useState(null);
+      const [formData, setFormData] = useState({});
 
-                return () => {
-                    clearInterval(timer);
-                    clearInterval(infoTimer);
-                };
-            }, [infoHighlights]);
+      const [kasPage, setKasPage] = useState(1);
+      const itemsPerPage = 15;
 
-            useEffect(() => {
-                if (window.lucide) {
-                    window.lucide.createIcons();
-                }
-            }, [view, showLogin, isAdmin, isMenuOpen, infoIndex, isLoading, pengurus, adminTab, editingId, showPassword, transactions, currentTime]);
+      const [showLogin, setShowLogin] = useState(false);
+      const [showMobileMenu, setShowMobileMenu] = useState(false);
 
-            const fetchAllData = async () => {
-                setIsLoading(true);
-                try {
-                    const [resKas, resGal, resPeng] = await Promise.all([
-                        fetch(`${GSHEET_URL}?sheet=Sheet1`),
-                        fetch(`${GSHEET_URL}?sheet=galeri`),
-                        fetch(`${GSHEET_URL}?sheet=pengurus`)
-                    ]);
-                    
-                    const dKas = await resKas.json();
-                    const dGal = await resGal.json();
-                    const dPeng = await resPeng.json();
+      // Effect for Lucide icons
+      useEffect(() => {
+        if (typeof lucide !== 'undefined') {
+          lucide.createIcons();
+        }
+      }, [view, darkMode, loading, adminTab, isAdmin, showLogin, showMobileMenu]);
 
-                    setTransactions(Array.isArray(dKas) ? dKas : []);
-                    setGallery(Array.isArray(dGal) ? dGal : []);
-                    setPengurus(Array.isArray(dPeng) ? dPeng : []);
-                } catch (e) {
-                    console.error("Fetch failed", e);
-                }
-                setIsLoading(false);
-            };
+      useEffect(() => {
+        document.documentElement.classList.toggle("dark", darkMode);
+      }, [darkMode]);
 
-            const handleCrudAction = async (action, sheetName, data = null) => {
-                setIsLoading(true);
-                const payload = {
-                    action: action,
-                    sheet: sheetName,
-                    data: data || formData
-                };
+      const fetchData = async () => {
+        setLoading(true);
+        try {
+          const [kasRes, galRes, pengRes] = await Promise.all([
+            fetch(`${API_URL}?sheet=Sheet1`),
+            fetch(`${API_URL}?sheet=galeri`),
+            fetch(`${API_URL}?sheet=pengurus`)
+          ]);
 
-                try {
-                    const res = await fetch(GSHEET_URL, {
-                        method: 'POST',
-                        body: JSON.stringify(payload)
-                    });
-                    await fetchAllData();
-                    setEditingId(null);
-                    setFormData({});
-                } catch (e) {
-                    console.error("CRUD Action failed", e);
-                }
-                setIsLoading(false);
-            };
+          const kasJson = await kasRes.json();
+          const galJson = await galRes.json();
+          const pengJson = await pengRes.json();
 
-            const formatRupiah = (number) => {
-                return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(number);
-            };
+          setKasData(Array.isArray(kasJson) ? kasJson.sort((a,b) => new Date(b.date) - new Date(a.date)) : []);
+          setGaleriData(Array.isArray(galJson) ? galJson : []);
+          setPengurusData(Array.isArray(pengJson) ? pengJson : []);
+          setErrorMsg(null);
+        } catch (err) {
+          setErrorMsg("Gagal memuat data dari server.");
+          console.error(err);
+        } finally {
+          setLoading(false);
+        }
+      };
 
-            const formatShortDate = (date) => {
-                const dayNames = ["MIN", "SEN", "SEL", "RAB", "KAM", "JUM", "SAB"];
-                const d = String(date.getDate()).padStart(2, '0');
-                const m = String(date.getMonth() + 1).padStart(2, '0');
-                const y = String(date.getFullYear()).slice(-2);
-                const dayName = dayNames[date.getDay()];
-                return `${dayName}, ${d}:${m}:${y}`;
-            };
+      useEffect(() => {
+        fetchData();
+      }, []);
 
-            const formatTime = (date) => {
-                return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-            };
+      const handleLogin = async (e) => {
+        e.preventDefault();
+        const username = e.target.username.value;
+        const password = e.target.password.value;
+        setActionLoading(true);
 
-            const totals = useMemo(() => {
-                const tin = transactions.filter(t => t.type === 'in').reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
-                const tout = transactions.filter(t => t.type === 'out').reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
-                return { in: tin, out: tout, balance: tin - tout };
-            }, [transactions]);
+        try {
+          const res = await fetch(API_URL, {
+            method: "POST",
+            body: JSON.stringify({ action: "login", username, password })
+          });
+          const data = await res.json();
 
-            const handleLogout = () => {
-                setIsAdmin(false);
-                setView('beranda');
-                setShowPassword(false);
-            };
+          if (data.success && data.token) {
+            localStorage.setItem(TOKEN_KEY, data.token);
+            setToken(data.token);
+            setIsAdmin(true);
+            setShowLogin(false);
+            setView("admin");
+            fetchData();
+          } else {
+            alert(data.error || "Username atau Password salah.");
+          }
+        } catch (err) {
+          alert("Gagal terhubung ke layanan otentikasi.");
+        } finally {
+          setActionLoading(false);
+        }
+      };
 
-            const menuItems = [
-                { id: 'beranda', label: 'Beranda', icon: 'home' },
-                { id: 'pengurus', label: 'Pengurus', icon: 'users' },
-                { id: 'kas', label: 'Kas PHBI', icon: 'wallet' },
-                { id: 'galeri', label: 'Galeri', icon: 'image' },
-                ...(isAdmin ? [{ id: 'admin', label: 'Panel Admin', icon: 'layout-dashboard' }] : [])
-            ];
+      const logout = () => {
+        if(confirm("Apakah Anda yakin ingin keluar?")) {
+          localStorage.removeItem(TOKEN_KEY);
+          setToken(null);
+          setIsAdmin(false);
+          setView("beranda");
+        }
+      };
 
-            return (
-                <div className="min-h-screen flex flex-col pt-16 lg:pt-24">
-                    {/* Header Navigasi */}
-                    <header className="fixed top-0 left-0 w-full z-[100]">
-                        <nav className="glass border-b border-slate-200 shadow-sm">
-                            <div className="max-w-7xl mx-auto px-4 lg:px-6 py-3 lg:py-4 flex justify-between items-center">
-                                <div className="flex items-center gap-3 cursor-pointer" onClick={() => setView('beranda')}>
-                                    <div className="w-10 h-10 bg-emerald-800 rounded-xl flex items-center justify-center text-white font-extrabold shadow-lg">MF</div>
-                                    <div>
-                                        <h1 className="text-base lg:text-lg font-extrabold text-emerald-950 leading-none">Mabda'il Falah</h1>
-                                        <p className="text-[8px] font-black text-emerald-600 uppercase tracking-widest mt-1">Pondok Pesantren</p>
-                                    </div>
-                                </div>
+      const crud = async (action, sheetName, payload = {}) => {
+        if (!token) return alert("Sesi admin telah berakhir. Silakan login kembali.");
+        
+        setActionLoading(true);
+        try {
+          const body = {
+            action,
+            sheet: sheetName === "kas" ? "Sheet1" : sheetName,
+            token,
+            ...payload
+          };
 
-                                <div className="hidden lg:flex items-center gap-8">
-                                    <div className="flex gap-6">
-                                        {menuItems.map(item => (
-                                            <button key={item.id} onClick={() => setView(item.id)} 
-                                                className={`text-[10px] font-black uppercase tracking-widest transition-all pb-1 ${view === item.id ? 'nav-link-active' : 'text-slate-400 hover:text-emerald-700'}`}>
-                                                {item.label}
-                                            </button>
-                                        ))}
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <button onClick={() => isAdmin ? setView('admin') : setShowLogin(true)} className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs border transition-all ${isAdmin ? 'bg-emerald-800 text-white shadow-lg' : 'bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100'}`}>
-                                            <i data-lucide={isAdmin ? "shield-check" : "lock"} className="w-3.5 h-3.5"></i>
-                                            {isAdmin ? 'Mode Admin' : 'Login'}
-                                        </button>
-                                        {isAdmin && (
-                                            <button onClick={handleLogout} className="logout-btn flex items-center justify-center w-10 h-10 rounded-xl bg-red-50 text-red-600 border border-red-100 transition-all shadow-sm" title="Keluar">
-                                                <i data-lucide="log-out" className="w-4 h-4"></i>
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
+          const res = await fetch(API_URL, {
+            method: "POST",
+            body: JSON.stringify(body)
+          });
+          const result = await res.json();
 
-                                <div className="flex lg:hidden items-center gap-2">
-                                    {isAdmin && <button onClick={handleLogout} className="p-2 text-red-500"><i data-lucide="log-out" className="w-5 h-5"></i></button>}
-                                    <button onClick={() => isAdmin ? setView('admin') : setShowLogin(true)} className="p-2 text-emerald-800"><i data-lucide={isAdmin ? "shield-check" : "lock"} className="w-5 h-5"></i></button>
-                                    <button onClick={() => setIsMenuOpen(true)} className="p-2 text-emerald-800"><i data-lucide="menu" className="w-6 h-6"></i></button>
-                                </div>
-                            </div>
-                        </nav>
-                        
-                        {/* Top Bar Informasi */}
-                        <div className="w-full bg-emerald-950 py-2 px-4 border-b border-emerald-900/50">
-                            <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-                                <div className="flex items-center gap-2 shrink-0">
-                                    <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-emerald-900/40 rounded-lg border border-emerald-800/50">
-                                        <i data-lucide="calendar" className="w-3 h-3 text-emerald-500"></i>
-                                        <span className="text-[9px] font-bold text-emerald-100 uppercase tracking-tighter">
-                                            {formatShortDate(currentTime)}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-900/40 rounded-lg border border-emerald-800/50">
-                                        <i data-lucide="clock" className="w-3 h-3 text-emerald-500"></i>
-                                        <span className="text-[9px] font-black text-emerald-100 tracking-widest">
-                                            {formatTime(currentTime)}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div className="flex-1 overflow-hidden relative">
-                                    <div key={infoIndex} className="flex items-center justify-center gap-2 animate-in fade-in slide-in-from-right-4 duration-700">
-                                        <i data-lucide={infoHighlights[infoIndex].icon} className="w-3 h-3 text-emerald-400"></i>
-                                        <span className="text-[9px] sm:text-[10px] font-bold text-emerald-50/90 uppercase tracking-widest leading-none text-center truncate">
-                                            {infoHighlights[infoIndex].text}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div className="hidden md:block shrink-0 w-[120px]"></div>
-                            </div>
-                        </div>
-                    </header>
+          if (result.status === "success" || result.success) {
+            await fetchData();
+            setEditingItem(null);
+            setFormData({});
+          } else {
+            alert(result.error || "Operasi gagal dilakukan.");
+          }
+        } catch (err) {
+          alert("Gagal terhubung ke server.");
+        } finally {
+          setActionLoading(false);
+        }
+      };
 
-                    {/* Mobile Menu */}
-                    {isMenuOpen && (
-                        <div className="fixed inset-0 z-[200] lg:hidden">
-                            <div className="absolute inset-0 bg-emerald-950/40 backdrop-blur-md" onClick={() => setIsMenuOpen(false)}></div>
-                            <div className="absolute right-0 top-0 h-full w-[300px] bg-white shadow-2xl p-6 flex flex-col animate-in slide-in-from-right duration-300">
-                                <div className="flex justify-between items-center mb-10">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-8 h-8 bg-emerald-800 rounded-lg flex items-center justify-center text-white text-xs font-bold">MF</div>
-                                        <span className="text-xs font-black uppercase tracking-widest text-emerald-950">Menu Utama</span>
-                                    </div>
-                                    <button onClick={() => setIsMenuOpen(false)} className="p-2 text-slate-400 hover:text-red-500 transition-colors">
-                                        <i data-lucide="x" className="w-6 h-6"></i>
-                                    </button>
-                                </div>
-                                <div className="flex flex-col gap-2">
-                                    {menuItems.map(m => (
-                                        <button key={m.id} onClick={() => { setView(m.id); setIsMenuOpen(false); }} 
-                                            className={`flex items-center gap-4 px-6 py-5 rounded-2xl transition-all ${view === m.id ? 'bg-emerald-800 text-white shadow-lg' : 'text-slate-400 hover:bg-emerald-50 hover:text-emerald-800'}`}>
-                                            <i data-lucide={m.icon} className="w-5 h-5"></i>
-                                            <span className="text-sm font-bold uppercase tracking-widest">{m.label}</span>
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    )}
+      const rupiah = (val) => new Intl.NumberFormat("id-ID", { 
+        style: "currency", 
+        currency: "IDR", 
+        minimumFractionDigits: 0 
+      }).format(val || 0);
 
-                    <main className="flex-1 bg-grid pb-20">
-                        {view === 'beranda' && (
-                            <section className="hero-gradient text-white pt-16 pb-24 lg:pt-32 lg:pb-48 px-6 text-center relative overflow-hidden">
-                                <div className="max-w-4xl mx-auto relative z-10 animate-in fade-in duration-1000">
-                                    <h2 className="text-5xl md:text-8xl font-black mb-8 leading-[0.9] tracking-tighter italic">Pesantren<br/>Mabda'il Falah</h2>
-                                    <p className="text-base lg:text-xl text-emerald-50/80 max-w-2xl mx-auto mb-12 font-medium leading-relaxed">
-                                        Mencetak generasi rabbani yang berpegang teguh pada Al-Qur'an, Hadits, dan khazanah Kitab Kuning melalui pendidikan berbasis adab dan kemandirian.
-                                    </p>
-                                    <div className="flex flex-col sm:flex-row justify-center gap-4">
-                                        <button className="bg-amber-500 text-emerald-950 px-10 py-4 rounded-full font-black text-[11px] uppercase tracking-widest shadow-xl hover:scale-105 transition-all">Pendaftaran PSB</button>
-                                        <button onClick={() => setView('galeri')} className="bg-white/10 backdrop-blur-md border border-white/20 px-10 py-4 rounded-full font-black text-[11px] uppercase tracking-widest hover:bg-white/20 transition-all">Lihat Dokumentasi</button>
-                                    </div>
-                                </div>
-                            </section>
-                        )}
+      const kasTotals = useMemo(() => {
+        const masuk = kasData.filter(t => t.type === "in").reduce((sum, t) => sum + Number(t.amount||0), 0);
+        const keluar = kasData.filter(t => t.type === "out").reduce((sum, t) => sum + Number(t.amount||0), 0);
+        return { masuk, keluar, saldo: masuk - keluar };
+      }, [kasData]);
 
-                        {view === 'pengurus' && (
-                            <div className="max-w-7xl mx-auto px-4 lg:px-6 py-12 lg:py-20 animate-in fade-in duration-500">
-                                <div className="mb-16">
-                                    <h3 className="text-4xl font-black text-emerald-950 tracking-tighter mb-2">Struktur Pengurus</h3>
-                                    <p className="text-slate-400 font-medium">Khidmah dan dedikasi untuk membina santri.</p>
-                                </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                                    {pengurus.map((p, idx) => (
-                                        <div key={p.id || idx} className="profile-card group bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 flex flex-col items-center text-center">
-                                            <div className="w-32 h-32 mb-6 rounded-3xl overflow-hidden ring-4 ring-emerald-50 relative bg-slate-100">
-                                                <img 
-                                                    src={p.foto || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.nama)}&background=064e3b&color=fff&size=128`} 
-                                                    alt={p.nama} 
-                                                    className="profile-img w-full h-full object-cover transition-transform duration-700"
-                                                />
-                                            </div>
-                                            <span className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-[9px] font-black uppercase tracking-widest border border-emerald-100 mb-3">{p.sebagai}</span>
-                                            <h4 className="font-bold text-slate-800 text-lg leading-tight mb-2">{p.nama}</h4>
-                                            <div className="flex items-center justify-center gap-2 text-slate-400 text-xs font-medium">
-                                                <i data-lucide="phone" className="w-3 h-3"></i> {p.kontak || '-'}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
+      const paginatedKas = useMemo(() => {
+        const start = (kasPage - 1) * itemsPerPage;
+        return kasData.slice(start, start + itemsPerPage);
+      }, [kasData, kasPage]);
 
-                        {view === 'kas' && (
-                                <div className="max-w-6xl mx-auto px-4 lg:px-6 py-12 lg:py-20 animate-in slide-in-from-bottom-4">
-                                <div className="mb-12">
-                                    <h3 className="text-4xl font-black text-emerald-950 tracking-tighter mb-2">Laporan Kas PHBI</h3>
-                                    <p className="text-slate-400 font-medium">Data keuangan pembangunan secara transparan dan akuntabel.</p>
-                                </div>
-                                <div className="grid lg:grid-cols-3 gap-8">
-                                    <div className="lg:col-span-2 bg-emerald-900 rounded-[40px] p-10 lg:p-14 text-white shadow-2xl relative overflow-hidden">
-                                        <p className="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-400 mb-4">Saldo Tersedia</p>
-                                        <h2 className="text-4xl md:text-7xl font-black mb-12 tracking-tighter">{formatRupiah(totals.balance)}</h2>
-                                        <div className="grid grid-cols-2 gap-8 pt-10 border-t border-white/10">
-                                            <div>
-                                                <p className="text-[10px] font-bold text-emerald-400 uppercase mb-2">Pemasukan</p>
-                                                <p className="text-xl lg:text-2xl font-black">{formatRupiah(totals.in)}</p>
-                                            </div>
-                                            <div>
-                                                <p className="text-[10px] font-bold text-red-400 uppercase mb-2">Pengeluaran</p>
-                                                <p className="text-xl lg:text-2xl font-black">{formatRupiah(totals.out)}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="bg-white border border-slate-200 rounded-[40px] p-10 flex flex-col items-center text-center shadow-xl">
-                                        <div className="w-20 h-20 bg-emerald-50 rounded-3xl flex items-center justify-center text-emerald-600 mb-8 shadow-inner">
-                                            <i data-lucide="hand-coins" className="w-10 h-10"></i>
-                                        </div>
-                                        <h4 className="font-black text-slate-800 text-xl mb-4">Donasi Digital</h4>
-                                        <p className="text-slate-400 text-sm font-medium leading-relaxed mb-8">Partisipasi anda sangat berharga untuk pengembangan pendidikan Islam.</p>
-                                        <button className="w-full py-4 bg-emerald-800 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-700 transition-all">Hubungi Bendahara</button>
-                                    </div>
-                                </div>
-                                <div className="mt-16 bg-white rounded-[2rem] border border-slate-100 overflow-hidden shadow-sm">
-                                    <div className="p-8 border-b border-slate-50 flex justify-between items-center">
-                                        <h4 className="font-black text-emerald-950 uppercase tracking-widest text-sm">Riwayat Transaksi</h4>
-                                    </div>
-                                    <div className="overflow-x-auto">
-                                        <table className="w-full text-left">
-                                            <thead className="bg-slate-50 text-[10px] font-black uppercase text-slate-400 tracking-widest">
-                                                <tr>
-                                                    <th className="px-8 py-5">Tanggal</th>
-                                                    <th className="px-8 py-5">Keterangan</th>
-                                                    <th className="px-8 py-5 text-right">Nominal</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-slate-50">
-                                                {transactions.slice(0, 20).map((t, idx) => (
-                                                    <tr key={idx} className="hover:bg-slate-50/50">
-                                                        <td className="px-8 py-5 text-xs font-bold text-slate-500">{t.date}</td>
-                                                        <td className="px-8 py-5 text-sm font-bold text-slate-800">{t.description}</td>
-                                                        <td className={`px-8 py-5 text-right font-black text-sm ${t.type === 'in' ? 'text-emerald-600' : 'text-red-500'}`}>
-                                                            {t.type === 'in' ? '+' : '-'} {new Intl.NumberFormat('id-ID').format(t.amount)}
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
+      const totalKasPages = Math.ceil(kasData.length / itemsPerPage);
 
-                        {view === 'admin' && isAdmin && (
-                            <div className="max-w-7xl mx-auto px-4 lg:px-6 py-12 lg:py-20 animate-in zoom-in-95 duration-300">
-                                <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6">
-                                    <div>
-                                        <h3 className="text-4xl font-black text-emerald-950 tracking-tighter mb-2 italic underline decoration-amber-400">Admin Control</h3>
-                                        <p className="text-slate-400 font-medium">Kelola konten website secara terintegrasi.</p>
-                                    </div>
-                                    <div className="flex bg-slate-200/50 p-1.5 rounded-2xl">
-                                        {['kas', 'galeri', 'pengurus'].map(tab => (
-                                            <button 
-                                                key={tab}
-                                                onClick={() => { setAdminTab(tab); setEditingId(null); setFormData({}); }}
-                                                className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${adminTab === tab ? 'admin-tab-active' : 'text-slate-400 hover:text-emerald-800'}`}
-                                            >
-                                                {tab}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
+      // Components
+      const SectionTitle = ({ children, subtitle }) => (
+        <div className="text-center mb-12 animate-fade-in">
+          <h2 className="text-3xl md:text-5xl font-extrabold text-slate-900 dark:text-white mb-4">{children}</h2>
+          {subtitle && <p className="text-slate-500 dark:text-slate-400 max-w-2xl mx-auto font-medium">{subtitle}</p>}
+          <div className="w-20 h-1.5 bg-emerald-600 mx-auto mt-6 rounded-full"></div>
+        </div>
+      );
 
-                                <div className="bg-white rounded-[3rem] p-8 lg:p-12 shadow-sm border border-slate-100 mb-12">
-                                    <h4 className="text-xl font-black text-emerald-950 mb-8 uppercase tracking-widest">
-                                        {editingId ? 'Edit Data' : `Tambah ${adminTab}`}
-                                    </h4>
-
-                                    <form onSubmit={(e) => {
-                                        e.preventDefault();
-                                        const action = editingId ? 'edit' : 'add';
-                                        const sheet = adminTab === 'kas' ? 'Sheet1' : adminTab;
-                                        handleCrudAction(action, sheet, formData);
-                                    }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                        
-                                        {adminTab === 'kas' && (
-                                            <>
-                                                <div className="space-y-1">
-                                                    <label className="text-[10px] font-black text-slate-400 uppercase ml-2">Tanggal</label>
-                                                    <input value={formData.date || ''} onChange={e => setFormData({...formData, date: e.target.value})} type="date" className="w-full bg-slate-50 border-none p-4 rounded-2xl font-bold text-xs" required />
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <label className="text-[10px] font-black text-slate-400 uppercase ml-2">Keterangan</label>
-                                                    <input value={formData.description || ''} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="Keterangan transaksi" className="w-full bg-slate-50 border-none p-4 rounded-2xl font-bold text-xs" required />
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <label className="text-[10px] font-black text-slate-400 uppercase ml-2">Nominal</label>
-                                                    <input value={formData.amount || ''} onChange={e => setFormData({...formData, amount: e.target.value})} type="number" placeholder="Nominal Rp." className="w-full bg-slate-50 border-none p-4 rounded-2xl font-bold text-xs" required />
-                                                </div>
-                                                {/* Kategori */}
-<div className="space-y-1">
-    <label className="text-[10px] font-black text-slate-400 uppercase ml-2">Kategori</label>
-    <select 
-        value={formData.category || ''} 
-        onChange={e => setFormData({...formData, category: e.target.value})}
-        className="w-full bg-slate-50 border-none p-4 rounded-2xl font-bold text-xs appearance-none" 
-        required
-    >
-        <option value="">-- Pilih Kategori --</option>
-        <option value="Donasi">Donasi</option>
-        <option value="Infaq">Infaq</option>
-        <option value="Shadaqah">Shadaqah</option>
-        <option value="Konsumsi">Konsumsi</option>
-        <option value="Operasional">Operasional</option>
-        <option value="Perlengkapan">Perlengkapan</option>
-        <option value="Lain-lain">Lain-lain</option>
-    </select>
-</div>
-
-{/* Jenis (masuk/keluar) */}
-<div className="space-y-1">
-    <label className="text-[10px] font-black text-slate-400 uppercase ml-2">Jenis</label>
-    <select 
-        value={formData.type || ''} 
-        onChange={e => setFormData({...formData, type: e.target.value})}
-        className="w-full bg-slate-50 border-none p-4 rounded-2xl font-bold text-xs appearance-none" 
-        required
-    >
-        <option value="">-- Pilih Jenis --</option>
-        <option value="in">Masuk (+)</option>
-        <option value="out">Keluar (-)</option>
-    </select>
-</div>
-                                            </>
-                                        )}
-
-                                        {adminTab === 'galeri' && (
-                                            <>
-                                                <input value={formData.judul || ''} onChange={e => setFormData({...formData, judul: e.target.value})} placeholder="Judul Foto" className="bg-slate-50 border-none p-4 rounded-2xl font-bold text-xs" required />
-                                                <input value={formData.imageUrl || ''} onChange={e => setFormData({...formData, imageUrl: e.target.value})} placeholder="URL Gambar" className="bg-slate-50 border-none p-4 rounded-2xl font-bold text-xs" required />
-                                                <input value={formData.tanggal || ''} onChange={e => setFormData({...formData, tanggal: e.target.value})} type="date" className="bg-slate-50 border-none p-4 rounded-2xl font-bold text-xs" required />
-                                            </>
-                                        )}
-
-                                        {adminTab === 'pengurus' && (
-                                            <>
-                                                <input value={formData.nama || ''} onChange={e => setFormData({...formData, nama: e.target.value})} placeholder="Nama Lengkap" className="bg-slate-50 border-none p-4 rounded-2xl font-bold text-xs" required />
-                                                <input value={formData.sebagai || ''} onChange={e => setFormData({...formData, sebagai: e.target.value})} placeholder="Jabatan" className="bg-slate-50 border-none p-4 rounded-2xl font-bold text-xs" required />
-                                                <input value={formData.foto || ''} onChange={e => setFormData({...formData, foto: e.target.value})} placeholder="URL Foto" className="bg-slate-50 border-none p-4 rounded-2xl font-bold text-xs" />
-                                            </>
-                                        )}
-
-                                        <button type="submit" className="md:col-span-full bg-emerald-800 text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl mt-4 hover:bg-emerald-700 transition-all">
-                                            {isLoading ? 'Sedang Memproses...' : editingId ? 'Simpan Perubahan' : 'Tambah Data Baru'}
-                                        </button>
-                                        {editingId && (
-                                            <button type="button" onClick={() => {setEditingId(null); setFormData({});}} className="md:col-span-full border border-slate-200 text-slate-400 py-3 rounded-2xl font-bold text-[9px] uppercase tracking-widest">Batal Edit</button>
-                                        )}
-                                    </form>
-                                </div>
-
-                                <div className="bg-white rounded-[3rem] overflow-hidden border border-slate-100 shadow-sm">
-                                    <div className="overflow-x-auto">
-                                        <table className="w-full text-left">
-                                            <thead className="bg-slate-50 border-b border-slate-100">
-                                                <tr>
-                                                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Informasi Utama</th>
-                                                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Aksi</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-slate-50">
-                                                {(adminTab === 'kas' ? transactions : adminTab === 'galeri' ? gallery : pengurus).map((item, i) => (
-                                                    <tr key={item.id || i} className="hover:bg-slate-50/30 transition-colors">
-                                                        <td className="px-8 py-6">
-                                                            {adminTab === 'kas' ? (
-                                                                <div className="flex flex-col gap-1">
-                                                                    <div className="flex items-center gap-2">
-                                                                        <p className="font-bold text-slate-800 text-sm">{item.description}</p>
-                                                                        <span className={`text-[8px] font-black px-2 py-0.5 rounded-md uppercase tracking-tighter ${item.type === 'in' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
-                                                                            {item.type === 'in' ? 'Masuk' : 'Keluar'}
-                                                                        </span>
-                                                                    </div>
-                                                                    
-                                                                    <div className="flex items-center gap-3">
-                                                                        <span className="text-[10px] text-slate-400 font-black uppercase tracking-tighter">{item.date}</span>
-                                                                        <span className={`text-xs font-black ${item.type === 'in' ? 'text-emerald-600' : 'text-red-600'}`}>
-                                                                            {item.type === 'in' ? '+' : '-'} {formatRupiah(item.amount)}
-                                                                        </span>
-                                                                    </div>
-                                                                </div>
-                                                            ) : (
-                                                                <div className="flex flex-col">
-                                                                    <p className="font-bold text-slate-800 text-sm">{item.judul || item.nama}</p>
-                                                                    <span className="text-[10px] text-slate-400 font-black uppercase tracking-tighter">{item.tanggal || item.sebagai}</span>
-                                                                </div>
-                                                            )}
-                                                        </td>
-                                                        <td className="px-8 py-6 text-right">
-                                                            <div className="flex justify-end gap-2">
-                                                                <button onClick={() => { setEditingId(item.id); setFormData(item); window.scrollTo({top: 200, behavior: 'smooth'}); }} className="w-9 h-9 flex items-center justify-center bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-sm">
-                                                                    <i data-lucide="edit-3" className="w-4 h-4"></i>
-                                                                </button>
-                                                                <button onClick={() => { if(confirm('Hapus data ini?')) handleCrudAction('delete', adminTab === 'kas' ? 'Sheet1' : adminTab, { id: item.id }); }} className="w-9 h-9 flex items-center justify-center bg-red-50 text-red-600 rounded-xl hover:bg-red-600 hover:text-white transition-all shadow-sm">
-                                                                    <i data-lucide="trash-2" className="w-4 h-4"></i>
-                                                                </button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {view === 'galeri' && (
-                            <div className="max-w-7xl mx-auto px-4 lg:px-6 py-12 lg:py-20 animate-in fade-in duration-500">
-                                <div className="mb-12 text-center lg:text-left">
-                                    <h3 className="text-4xl font-black text-emerald-950 tracking-tighter mb-2">Galeri & Dokumentasi</h3>
-                                    <p className="text-slate-400 font-medium">Dokumentasi kegiatan dan pembangunan pondok.</p>
-                                </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                                    {gallery.map((item, idx) => (
-                                        <div key={item.id || idx} className="group bg-white rounded-3xl overflow-hidden shadow-sm border border-slate-100 flex flex-col">
-                                            <div className="aspect-[4/3] overflow-hidden relative bg-slate-50">
-                                                <img 
-                                                    src={item.imageUrl} 
-                                                    alt={item.judul} 
-                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                                                    onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1590076215667-873d17e78167?w=800"; }}
-                                                />
-                                            </div>
-                                            <div className="p-6">
-                                                <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest mb-2 block">{item.tanggal}</span>
-                                                <h4 className="font-bold text-slate-800 text-lg leading-tight line-clamp-2">{item.judul}</h4>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </main>
-
-                    {/* Footer */}
-                    <footer className="bg-slate-950 text-white py-12 px-6 border-t border-white/5 mt-auto">
-                        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-                            <div className="text-center md:text-left">
-                                <div className="flex items-center justify-center md:justify-start gap-3 mb-4">
-                                    <div className="w-8 h-8 bg-emerald-800 rounded-lg flex items-center justify-center text-white font-bold">MF</div>
-                                    <span className="text-sm font-black uppercase tracking-widest text-emerald-50">Mabda'il Falah</span>
-                                </div>
-                                <p className="text-slate-500 text-xs max-w-xs leading-relaxed">Pendidikan Islam berbasis adab dan kemandirian untuk masa depan generasi Qur'ani.</p>
-                            </div>
-                            <p className="text-[10px] font-black text-slate-700 uppercase tracking-[0.4em]">© 2026 Ponpes Mabda'il Falah</p>
-                        </div>
-                    </footer>
-
-                    {/* Login Modal */}
-                    {showLogin && (
-                        <div className="fixed inset-0 z-[1000] bg-emerald-950/90 backdrop-blur-xl flex items-center justify-center p-4">
-                            <div className="bg-white w-full max-w-sm rounded-[40px] p-10 shadow-2xl relative animate-in zoom-in-95 duration-200">
-                                <button onClick={() => {setShowLogin(false); setShowPassword(false);}} className="absolute top-8 right-8 text-slate-300 hover:text-slate-500 transition-colors">
-                                    <i data-lucide="x" className="w-6 h-6"></i>
-                                </button>
-                                <div className="text-center mb-10">
-                                    <div className="w-16 h-16 bg-emerald-50 rounded-3xl flex items-center justify-center text-emerald-700 mx-auto mb-6 shadow-inner">
-                                        <i data-lucide="fingerprint" className="w-8 h-8"></i>
-                                    </div>
-                                    <h3 className="text-2xl font-black text-slate-800 tracking-tight">Admin Login</h3>
-                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2 italic">Akses Terbatas</p>
-                                </div>
-                                <form onSubmit={(e) => {
-                                    e.preventDefault();
-                                    const fd = new FormData(e.target);
-                                    if (fd.get('u') === ADMIN_USER && fd.get('p') === ADMIN_PASS) {
-                                        setIsAdmin(true); setShowLogin(false); setView('admin');
-                                    } else { 
-                                        alert("Username atau Password Salah!"); 
-                                    }
-                                }} className="space-y-4">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black uppercase text-slate-400 ml-4 tracking-widest">Username</label>
-                                        <input 
-                                            name="u" 
-                                            placeholder="" 
-                                            autoComplete="off"
-                                            className="w-full px-7 py-5 bg-slate-50 rounded-2xl font-bold text-sm border border-slate-100 outline-none focus:ring-2 focus:ring-emerald-500/20" 
-                                            required 
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black uppercase text-slate-400 ml-4 tracking-widest">Password</label>
-                                        <div className="relative">
-                                            <input 
-                                                name="p" 
-                                                type={showPassword ? "text" : "password"} 
-                                                placeholder="••••••••" 
-                                                className="w-full px-7 py-5 bg-slate-50 rounded-2xl font-bold text-sm border border-slate-100 outline-none focus:ring-2 focus:ring-emerald-500/20" 
-                                                required 
-                                            />
-                                            <button 
-                                                type="button"
-                                                onClick={() => setShowPassword(!showPassword)}
-                                                className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 hover:text-emerald-700 transition-colors"
-                                            >
-                                                <i data-lucide={showPassword ? "eye-off" : "eye"} className="w-5 h-5"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <button type="submit" className="w-full bg-emerald-800 text-white py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl hover:bg-emerald-700 transition-all mt-4">Masuk</button>
-                                </form>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Sinkronisasi */}
-                    {isLoading && (
-                        <div className="fixed bottom-8 right-8 z-[2000] bg-emerald-950 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 animate-in slide-in-from-right-10 duration-300">
-                            <div className="w-5 h-5 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin"></div>
-                            <span className="text-[10px] font-black uppercase tracking-widest">Sinkronisasi...</span>
-                        </div>
-                    )}
+      return (
+        <div className={`min-h-screen flex flex-col transition-colors duration-300 ${darkMode ? 'dark bg-gray-900 text-gray-100' : 'bg-slate-50 text-slate-900'}`}>
+          
+          {/* NAVIGATION */}
+          <header className="fixed top-0 left-0 right-0 z-50 glass border-b border-slate-200 dark:border-gray-800 shadow-sm">
+            <div className="max-w-7xl mx-auto px-4 h-20 flex justify-between items-center">
+              
+              {/* BRANDING: Diperbarui agar muncul di mobile */}
+              <div className="flex items-center gap-2 sm:gap-3 cursor-pointer group shrink-0" onClick={() => setView("beranda")}>
+                <div className="w-9 h-9 sm:w-10 sm:h-10 bg-emerald-700 group-hover:bg-emerald-600 rounded-xl flex items-center justify-center text-white font-black text-lg sm:text-xl shadow-lg transition-colors">MF</div>
+                <div className="flex flex-col">
+                  <div className="font-extrabold text-sm sm:text-lg leading-tight text-slate-900 dark:text-white">Mabda'il Falah</div>
+                  <div className="text-[8px] sm:text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest sm:tracking-[0.2em]">Pondok Pesantren</div>
                 </div>
-            );
-        };
+              </div>
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
+              {/* DESKTOP NAV */}
+              <nav className="hidden lg:flex items-center gap-8">
+                {["beranda","pengurus","kas","galeri"].map(v => (
+                  <button
+                    key={v}
+                    onClick={() => setView(v)}
+                    className={`nav-link text-sm font-bold uppercase tracking-wider transition-colors ${view === v ? "active text-emerald-600 dark:text-emerald-400" : "text-slate-500 dark:text-slate-400 hover:text-emerald-600"}`}
+                  >
+                    {v === 'kas' ? 'Keuangan' : v}
+                  </button>
+                ))}
+                {isAdmin && (
+                  <button
+                    onClick={() => setView("admin")}
+                    className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest transition-all ${view === "admin" ? "bg-emerald-600 text-white" : "border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-50"}`}
+                  >
+                    Admin Panel
+                  </button>
+                )}
+              </nav>
+
+              <div className="flex items-center gap-1 sm:gap-2">
+                <button
+                  onClick={() => setDarkMode(!darkMode)}
+                  className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-gray-800 transition-all text-slate-500 dark:text-slate-400"
+                >
+                  <i data-lucide={darkMode ? "sun" : "moon"} className="w-5 h-5" />
+                </button>
+
+                <div className="h-6 w-[1px] bg-slate-200 dark:bg-gray-700 mx-1 sm:mx-2 hidden sm:block"></div>
+
+                {isAdmin ? (
+                  <button onClick={logout} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all" title="Logout">
+                    <i data-lucide="log-out" className="w-5 h-5" />
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setShowLogin(true)}
+                    className="hidden lg:flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-md transition-all active:scale-95"
+                  >
+                    <i data-lucide="lock" className="w-4 h-4" />
+                    Login Admin
+                  </button>
+                )}
+
+                <button onClick={() => setShowMobileMenu(true)} className="lg:hidden p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-gray-800 transition-all">
+                  <i data-lucide="menu" className="w-6 h-6 text-slate-600 dark:text-slate-300"/>
+                </button>
+              </div>
+            </div>
+          </header>
+
+          {/* MOBILE MENU */}
+          {showMobileMenu && (
+            <div className="fixed inset-0 z-[60] lg:hidden">
+              <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowMobileMenu(false)}></div>
+              <div className="absolute right-0 top-0 h-full w-[280px] bg-white dark:bg-gray-900 shadow-2xl animate-fade-in p-6">
+                <div className="flex justify-between items-center mb-10">
+                  <span className="font-black text-emerald-600">MENU</span>
+                  <button onClick={() => setShowMobileMenu(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-gray-800 rounded-lg">
+                    <i data-lucide="x" className="w-6 h-6"/>
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  {["beranda","pengurus","kas","galeri","admin"].filter(v => v !== "admin" || isAdmin).map(v => (
+                    <button
+                      key={v}
+                      onClick={() => { setView(v); setShowMobileMenu(false); }}
+                      className={`w-full py-4 px-6 rounded-2xl text-left font-bold transition-all ${view === v ? "bg-emerald-600 text-white shadow-lg" : "hover:bg-slate-50 dark:hover:bg-gray-800 text-slate-600 dark:text-slate-300"}`}
+                    >
+                      {v === 'kas' ? 'Keuangan' : v.charAt(0).toUpperCase() + v.slice(1)}
+                    </button>
+                  ))}
+                  {!isAdmin && (
+                    <button 
+                      onClick={() => { setShowLogin(true); setShowMobileMenu(false); }}
+                      className="w-full mt-4 py-4 px-6 rounded-2xl text-left font-bold bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 flex items-center gap-3"
+                    >
+                      <i data-lucide="lock" className="w-4 h-4" />
+                      Login Admin
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* MAIN CONTENT */}
+          <main className="flex-1 pt-24 pb-20">
+            <div className="max-w-7xl mx-auto px-4">
+              
+              {/* VIEW: BERANDA */}
+              {view === "beranda" && (
+                <div className="space-y-20">
+                  <section className="hero-gradient text-white rounded-[2rem] overflow-hidden shadow-2xl relative">
+                    <div className="absolute inset-0 opacity-10 pointer-events-none" style={{backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`, backgroundSize: '32px 32px'}}></div>
+                    <div className="relative px-6 py-16 lg:py-32 text-center">
+                      <div className="inline-block px-4 py-1.5 bg-white/20 backdrop-blur-md rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-6 sm:mb-8 animate-fade-in">
+                        Ahlan Wa Sahlan
+                      </div>
+                      <h1 className="text-3xl sm:text-4xl lg:text-7xl font-black mb-8 leading-tight tracking-tight drop-shadow-sm animate-fade-in">
+                        Membangun Generasi <br className="hidden sm:block"/> <span className="text-emerald-200">Qur'ani & Berakhlak</span>
+                      </h1>
+                      <p className="text-base sm:text-lg lg:text-xl max-w-2xl mx-auto mb-10 sm:mb-12 opacity-90 font-medium leading-relaxed">
+                        Pondok Pesantren Mabda'il Falah berkomitmen mencetak santri yang mandiri, berilmu, dan menjunjung tinggi nilai-nilai Adab Islam.
+                      </p>
+                      <div className="flex flex-col sm:flex-row justify-center gap-4">
+                        <a href="#" className="bg-amber-400 hover:bg-amber-500 text-emerald-950 px-8 py-4 rounded-2xl font-black text-base sm:text-lg shadow-xl transition-all hover:-translate-y-1 active:scale-95">
+                          Pendaftaran Santri 2026
+                        </a>
+                        <button onClick={() => setView("galeri")} className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 px-8 py-4 rounded-2xl font-black text-base sm:text-lg transition-all hover:-translate-y-1">
+                          Galeri Kegiatan
+                        </button>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                    {[
+                      { icon: "book-open", title: "Kurikulum Terpadu", desc: "Perpaduan kurikulum pesantren salaf dengan pendidikan formal yang modern." },
+                      { icon: "users", title: "Asrama Nyaman", desc: "Lingkungan yang kondusif untuk mendukung proses belajar dan menghafal Al-Qur'an." },
+                      { icon: "heart", title: "Pembinaan Akhlak", desc: "Fokus utama pada pembentukan karakter santri melalui keteladanan para pengajar." }
+                    ].map((item, i) => (
+                      <div key={i} className="bg-white dark:bg-gray-800 p-8 rounded-[2rem] shadow-sm border border-slate-100 dark:border-gray-700 card-hover text-center">
+                        <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                          <i data-lucide={item.icon} className="w-8 h-8" />
+                        </div>
+                        <h3 className="text-xl font-bold mb-4 text-slate-800 dark:text-white">{item.title}</h3>
+                        <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">{item.desc}</p>
+                      </div>
+                    ))}
+                  </section>
+                </div>
+              )}
+
+              {/* VIEW: PENGURUS */}
+              {view === "pengurus" && (
+                <section className="animate-fade-in">
+                  <SectionTitle subtitle="Mengenal lebih dekat para pendidik dan pengelola di lingkungan Pondok Pesantren.">Struktur Pengurus</SectionTitle>
+                  
+                  {loading ? (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+                      {[...Array(8)].map((_, i) => (
+                        <div key={i} className="bg-white dark:bg-gray-800 h-64 rounded-3xl animate-pulse"></div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 lg:gap-8">
+                      {pengurusData.map(p => (
+                        <div key={p.id} className="group bg-white dark:bg-gray-800 rounded-[2rem] p-6 shadow-sm border border-slate-100 dark:border-gray-700 card-hover text-center">
+                          <div className="relative mb-6 mx-auto w-24 h-24 lg:w-32 lg:h-32">
+                            <div className="absolute inset-0 bg-emerald-600 rounded-3xl rotate-6 transition-transform group-hover:rotate-12 group-hover:scale-105"></div>
+                            <img
+                              src={p.foto || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.nama)}&background=047857&color=fff&size=200`}
+                              alt={p.nama}
+                              className="relative w-full h-full object-cover rounded-3xl border-2 border-white dark:border-gray-700 shadow-lg"
+                            />
+                          </div>
+                          <h3 className="font-black text-lg mb-1 truncate text-slate-800 dark:text-white">{p.nama}</h3>
+                          <p className="text-emerald-600 dark:text-emerald-400 font-bold text-xs uppercase tracking-wider mb-4">{p.sebagai}</p>
+                          <div className="flex items-center justify-center gap-2 text-slate-400 text-xs font-medium">
+                             <i data-lucide="phone" className="w-3.5 h-3.5" />
+                             <span>{p.kontak || "Tersedia"}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              )}
+
+              {/* VIEW: KEUANGAN (KAS) */}
+              {view === "kas" && (
+                <section className="animate-fade-in">
+                  <SectionTitle subtitle="Data transparansi pengelolaan dana operasional dan kegiatan Pesantren.">Laporan Keuangan</SectionTitle>
+
+                  <div className="grid lg:grid-cols-3 gap-6 sm:gap-8 mb-12">
+                    <div className="lg:col-span-2 bg-emerald-900 text-white rounded-[2.5rem] p-8 lg:p-12 shadow-2xl relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-20 -mt-20 blur-3xl"></div>
+                      <div className="relative">
+                        <div className="flex items-center gap-3 mb-6">
+                          <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                            <i data-lucide="wallet" className="w-4 h-4" />
+                          </div>
+                          <span className="text-emerald-200 text-sm font-bold uppercase tracking-widest">Saldo Kas Saat Ini</span>
+                        </div>
+                        <p className="text-4xl sm:text-5xl lg:text-7xl font-black mb-8 sm:mb-12 tracking-tighter">{rupiah(kasTotals.saldo)}</p>
+                        <div className="grid grid-cols-2 gap-4 sm:gap-8 pt-8 border-t border-white/10">
+                          <div>
+                            <p className="text-emerald-300/60 text-[10px] sm:text-xs font-bold uppercase mb-2">Total Pemasukan</p>
+                            <p className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+                              <i data-lucide="trending-up" className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" />
+                              {rupiah(kasTotals.masuk).replace("Rp", "").trim()}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-rose-300/60 text-[10px] sm:text-xs font-bold uppercase mb-2">Total Pengeluaran</p>
+                            <p className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+                              <i data-lucide="trending-down" className="w-4 h-4 sm:w-5 sm:h-5 text-rose-400" />
+                              {rupiah(kasTotals.keluar).replace("Rp", "").trim()}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-white dark:bg-gray-800 rounded-[2.5rem] p-8 lg:p-10 shadow-sm border border-slate-100 dark:border-gray-700 flex flex-col items-center justify-center text-center">
+                      <div className="w-16 h-16 bg-amber-50 dark:bg-amber-900/20 text-amber-500 rounded-full flex items-center justify-center mb-6">
+                        <i data-lucide="hand-coins" className="w-8 h-8" />
+                      </div>
+                      <h3 className="text-2xl font-black mb-4 text-slate-800 dark:text-white">Mari Berinfaq</h3>
+                      <p className="text-slate-500 dark:text-slate-400 text-sm mb-8 leading-relaxed font-medium">Dukungan Anda membantu pembangunan fasilitas pesantren dan beasiswa santri dhuafa.</p>
+                      <button className="bg-emerald-600 hover:bg-emerald-700 text-white w-full py-4 rounded-2xl font-black transition-all shadow-lg active:scale-95">
+                        Konfirmasi Infaq
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="bg-white dark:bg-gray-800 rounded-[2rem] shadow-sm border border-slate-100 dark:border-gray-700 overflow-hidden">
+                    <div className="px-6 sm:px-8 py-6 border-b border-slate-100 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <h3 className="font-black text-lg text-slate-800 dark:text-white">Riwayat Transaksi</h3>
+                      <div className="flex items-center gap-2 px-4 py-1.5 bg-slate-50 dark:bg-gray-900 rounded-full text-xs font-bold text-slate-500">
+                        <i data-lucide="file-text" className="w-3.5 h-3.5" />
+                        <span>Halaman {kasPage} dari {totalKasPages || 1}</span>
+                      </div>
+                    </div>
+
+                    <div className="overflow-x-auto custom-scrollbar">
+                      <table className="w-full text-left">
+                        <thead>
+                          <tr className="bg-slate-50/50 dark:bg-gray-900/50">
+                            <th className="px-6 sm:px-8 py-4 text-[10px] font-black uppercase tracking-wider text-slate-400">Tanggal</th>
+                            <th className="px-6 sm:px-8 py-4 text-[10px] font-black uppercase tracking-wider text-slate-400">Keterangan</th>
+                            <th className="px-6 sm:px-8 py-4 text-[10px] font-black uppercase tracking-wider text-slate-400 text-right">Nominal</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-50 dark:divide-gray-700">
+                          {loading ? (
+                            [...Array(5)].map((_, i) => (
+                              <tr key={i} className="animate-pulse">
+                                <td colSpan="3" className="px-8 py-6 h-10 bg-slate-50 dark:bg-gray-800/50"></td>
+                              </tr>
+                            ))
+                          ) : paginatedKas.length === 0 ? (
+                            <tr><td colSpan="3" className="px-8 py-20 text-center text-slate-400 font-medium italic">Data transaksi tidak ditemukan.</td></tr>
+                          ) : (
+                            paginatedKas.map(t => (
+                              <tr key={t.id} className="hover:bg-slate-50 dark:hover:bg-gray-800/40 transition-colors">
+                                <td className="px-6 sm:px-8 py-5 text-[11px] sm:text-sm font-bold text-slate-400">
+                                  {t.date?.split("T")[0] || t.date}
+                                </td>
+                                <td className="px-6 sm:px-8 py-5 font-bold text-sm lg:text-base text-slate-700 dark:text-slate-200">
+                                  {t.description}
+                                </td>
+                                <td className={`px-6 sm:px-8 py-5 text-right font-black ${t.type === "in" ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500"}`}>
+                                  {t.type === "in" ? "+" : "-"} {rupiah(t.amount).replace("Rp", "").trim()}
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {totalKasPages > 1 && (
+                      <div className="px-8 py-6 flex items-center justify-between border-t border-slate-100 dark:border-gray-700 bg-slate-50/30 dark:bg-gray-900/30">
+                        <button
+                          onClick={() => setKasPage(p => Math.max(1, p-1))}
+                          disabled={kasPage === 1}
+                          className="px-4 sm:px-6 py-2.5 rounded-xl border border-slate-200 dark:border-gray-700 text-xs sm:text-sm font-black disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white dark:hover:bg-gray-800 transition-all shadow-sm"
+                        >
+                          Sebelumnya
+                        </button>
+                        <button
+                          onClick={() => setKasPage(p => Math.min(totalKasPages, p+1))}
+                          disabled={kasPage === totalKasPages}
+                          className="px-4 sm:px-6 py-2.5 rounded-xl bg-emerald-600 text-white text-xs sm:text-sm font-black disabled:opacity-30 disabled:cursor-not-allowed shadow-md hover:bg-emerald-700 active:scale-95 transition-all"
+                        >
+                          Selanjutnya
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </section>
+              )}
+
+              {/* VIEW: GALERI */}
+              {view === "galeri" && (
+                <section className="animate-fade-in">
+                  <SectionTitle subtitle="Kumpulan momen dan kegiatan harian di Pondok Pesantren Mabda'il Falah.">Dokumentasi</SectionTitle>
+                  
+                  {loading ? (
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                      {[...Array(6)].map((_, i) => (
+                        <div key={i} className="aspect-video bg-slate-200 dark:bg-gray-800 rounded-3xl animate-pulse"></div>
+                      ))}
+                    </div>
+                  ) : galeriData.length === 0 ? (
+                    <div className="text-center py-24 sm:py-32 bg-white dark:bg-gray-800 rounded-[2rem] border border-dashed border-slate-300 dark:border-gray-600">
+                       <i data-lucide="image-off" className="w-12 h-12 mx-auto text-slate-300 mb-4" />
+                       <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Belum ada foto dokumentasi</p>
+                    </div>
+                  ) : (
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                      {galeriData.map(g => (
+                        <div key={g.id} className="group bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-sm border border-slate-100 dark:border-gray-700 card-hover">
+                          <div className="aspect-[4/3] overflow-hidden relative">
+                            <div className="absolute inset-0 bg-emerald-900/40 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center justify-center">
+                               <i data-lucide="maximize-2" className="text-white w-8 h-8 scale-50 group-hover:scale-100 transition-transform" />
+                            </div>
+                            <img
+                              src={g.imageUrl}
+                              alt={g.judul}
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                              onError={e => { e.target.src = "https://images.unsplash.com/photo-1510070112810-d4e9a46d9e91?auto=format&fit=crop&q=80&w=800"; }}
+                            />
+                          </div>
+                          <div className="p-6">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-3 py-1 rounded-full mb-3 inline-block">
+                              {g.tanggal || 'Kegiatan'}
+                            </span>
+                            <h3 className="font-bold text-base sm:text-lg leading-snug line-clamp-2 text-slate-800 dark:text-slate-200">{g.judul}</h3>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              )}
+
+              {/* VIEW: ADMIN PANEL */}
+              {view === "admin" && isAdmin && (
+                <section className="animate-fade-in pb-20">
+                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-12">
+                    <div>
+                      <div className="flex items-center gap-3 text-emerald-600 mb-2">
+                        <i data-lucide="shield-check" className="w-5 h-5" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">Dashboard Administrator</span>
+                      </div>
+                      <h2 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white">Manajemen Data</h2>
+                    </div>
+                    
+                    <div className="flex bg-slate-100 dark:bg-gray-800 p-1.5 rounded-2xl w-full lg:w-auto overflow-x-auto custom-scrollbar">
+                      {["kas","galeri","pengurus"].map(tab => (
+                        <button
+                          key={tab}
+                          onClick={() => { setAdminTab(tab); setEditingItem(null); setFormData({}); }}
+                          className={`flex-1 lg:flex-none px-6 py-3 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all ${adminTab === tab ? "bg-emerald-600 text-white shadow-md" : "text-slate-500 hover:text-emerald-600"}`}
+                        >
+                          {tab}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid lg:grid-cols-5 gap-8 lg:gap-12">
+                    {/* FORM SIDE */}
+                    <div className="lg:col-span-2">
+                      <div className="bg-white dark:bg-gray-800 rounded-[2rem] p-8 lg:p-10 shadow-sm border border-slate-100 dark:border-gray-700 sticky top-28">
+                        <div className="flex items-center justify-between mb-8">
+                          <h3 className="text-xl font-black text-slate-800 dark:text-white">{editingItem ? "Edit Data" : `Tambah ${adminTab}`}</h3>
+                          {editingItem && (
+                            <button onClick={() => { setEditingItem(null); setFormData({}); }} className="text-rose-500 text-[10px] font-bold uppercase tracking-widest">Batal</button>
+                          )}
+                        </div>
+
+                        <form
+                          onSubmit={e => {
+                            e.preventDefault();
+                            crud(editingItem ? "edit" : "add", adminTab, { 
+                              id: editingItem?.id,
+                              data: formData 
+                            });
+                          }}
+                          className="space-y-6"
+                        >
+                          {adminTab === "kas" && (
+                            <>
+                              <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-slate-400">Tanggal Transaksi</label>
+                                <input type="date" value={formData.date?.split("T")[0] || ""} onChange={e => setFormData({...formData, date: e.target.value})} className="w-full p-4 rounded-xl bg-slate-50 dark:bg-gray-900 border-none focus:ring-2 focus:ring-emerald-500 transition-all outline-none font-medium" required />
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-slate-400">Deskripsi</label>
+                                <textarea value={formData.description || ""} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full p-4 rounded-xl bg-slate-50 dark:bg-gray-900 border-none focus:ring-2 focus:ring-emerald-500 outline-none font-medium" rows="3" required placeholder="Contoh: Operasional Pesantren"></textarea>
+                              </div>
+                              <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                  <label className="text-[10px] font-black uppercase text-slate-400">Nominal</label>
+                                  <input type="number" value={formData.amount || ""} onChange={e => setFormData({...formData, amount: Number(e.target.value)})} className="w-full p-4 rounded-xl bg-slate-50 dark:bg-gray-900 border-none focus:ring-2 focus:ring-emerald-500 outline-none font-bold" required min="0" />
+                                </div>
+                                <div className="space-y-2">
+                                  <label className="text-[10px] font-black uppercase text-slate-400">Tipe</label>
+                                  <select value={formData.type || ""} onChange={e => setFormData({...formData, type: e.target.value})} className="w-full p-4 rounded-xl bg-slate-50 dark:bg-gray-900 border-none focus:ring-2 focus:ring-emerald-500 outline-none font-bold" required>
+                                    <option value="">Pilih</option>
+                                    <option value="in">MASUK</option>
+                                    <option value="out">KELUAR</option>
+                                  </select>
+                                </div>
+                              </div>
+                            </>
+                          )}
+
+                          {adminTab === "galeri" && (
+                            <>
+                              <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-slate-400">Judul Kegiatan</label>
+                                <input value={formData.judul || ""} onChange={e => setFormData({...formData, judul: e.target.value})} className="w-full p-4 rounded-xl bg-slate-50 dark:bg-gray-900 border-none focus:ring-2 focus:ring-emerald-500 outline-none font-medium" required />
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-slate-400">Tanggal</label>
+                                <input type="date" value={formData.tanggal || ""} onChange={e => setFormData({...formData, tanggal: e.target.value})} className="w-full p-4 rounded-xl bg-slate-50 dark:bg-gray-900 border-none focus:ring-2 focus:ring-emerald-500 outline-none font-medium" required />
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-slate-400">Link URL Gambar</label>
+                                <input value={formData.imageUrl || ""} onChange={e => setFormData({...formData, imageUrl: e.target.value})} className="w-full p-4 rounded-xl bg-slate-50 dark:bg-gray-900 border-none focus:ring-2 focus:ring-emerald-500 outline-none font-medium" placeholder="https://..." required />
+                              </div>
+                            </>
+                          )}
+
+                          {adminTab === "pengurus" && (
+                            <>
+                              <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-slate-400">Nama Lengkap</label>
+                                <input value={formData.nama || ""} onChange={e => setFormData({...formData, nama: e.target.value})} className="w-full p-4 rounded-xl bg-slate-50 dark:bg-gray-900 border-none focus:ring-2 focus:ring-emerald-500 outline-none font-bold" required />
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-slate-400">Jabatan</label>
+                                <input value={formData.sebagai || ""} onChange={e => setFormData({...formData, sebagai: e.target.value})} className="w-full p-4 rounded-xl bg-slate-50 dark:bg-gray-900 border-none focus:ring-2 focus:ring-emerald-500 outline-none font-medium" required />
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-slate-400">Kontak</label>
+                                <input value={formData.kontak || ""} onChange={e => setFormData({...formData, kontak: e.target.value})} className="w-full p-4 rounded-xl bg-slate-50 dark:bg-gray-900 border-none focus:ring-2 focus:ring-emerald-500 outline-none font-medium" />
+                              </div>
+                            </>
+                          )}
+
+                          <button
+                            type="submit"
+                            disabled={actionLoading}
+                            className={`w-full py-5 rounded-2xl font-black text-lg transition-all shadow-xl flex items-center justify-center gap-3 active:scale-95 ${editingItem ? 'bg-amber-500' : 'bg-emerald-600'} text-white disabled:opacity-50`}
+                          >
+                            {actionLoading ? (
+                              <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
+                            ) : (
+                              <>
+                                <i data-lucide={editingItem ? "save" : "plus-circle"} className="w-6 h-6" />
+                                {editingItem ? "SIMPAN" : `TAMBAH`}
+                              </>
+                            )}
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+
+                    {/* LIST SIDE */}
+                    <div className="lg:col-span-3">
+                      <div className="bg-white dark:bg-gray-800 rounded-[2rem] shadow-sm border border-slate-100 dark:border-gray-700 overflow-hidden">
+                        <div className="px-8 py-6 bg-slate-50 dark:bg-gray-900 border-b border-slate-100 dark:border-gray-700 flex justify-between items-center">
+                           <h4 className="font-black text-[10px] uppercase tracking-widest text-slate-500">Daftar Item</h4>
+                           <span className="text-[10px] font-bold text-slate-400">{(adminTab === 'kas' ? kasData : adminTab === 'galeri' ? galeriData : pengurusData).length} ITEM</span>
+                        </div>
+                        <div className="divide-y divide-slate-100 dark:divide-gray-700 max-h-[600px] overflow-y-auto custom-scrollbar">
+                           {(adminTab === "kas" ? kasData : adminTab === "galeri" ? galeriData : pengurusData).map(item => (
+                             <div key={item.id} className="p-5 sm:p-6 flex items-center justify-between hover:bg-slate-50/50 dark:hover:bg-gray-900/30 transition-colors">
+                                <div className="min-w-0 flex-1">
+                                   <p className="font-bold text-sm sm:text-base truncate text-slate-700 dark:text-slate-200">
+                                     {adminTab === "kas" ? item.description : (adminTab === "galeri" ? item.judul : item.nama)}
+                                   </p>
+                                   <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">
+                                     {adminTab === "kas" ? `${item.date?.split("T")[0]} • ${rupiah(item.amount)}` : (adminTab === "galeri" ? item.tanggal : item.sebagai)}
+                                   </p>
+                                </div>
+                                <div className="flex items-center gap-2 ml-4">
+                                   <button 
+                                     onClick={() => { setEditingItem(item); setFormData(item); }}
+                                     className="w-9 h-9 flex items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all"
+                                   >
+                                     <i data-lucide="edit-3" className="w-4 h-4" />
+                                   </button>
+                                   <button 
+                                     onClick={() => { if(confirm("Hapus data ini?")) crud("delete", adminTab, { id: item.id }); }}
+                                     className="w-9 h-9 flex items-center justify-center rounded-lg bg-rose-50 dark:bg-rose-900/30 text-rose-500 hover:bg-rose-500 hover:text-white transition-all"
+                                   >
+                                     <i data-lucide="trash-2" className="w-4 h-4" />
+                                   </button>
+                                </div>
+                             </div>
+                           ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              )}
+            </div>
+          </main>
+
+          {/* FOOTER */}
+          <footer className="bg-white dark:bg-gray-955 border-t border-slate-100 dark:border-gray-800 py-12">
+            <div className="max-w-7xl mx-auto px-4 text-center">
+              <div className="w-12 h-12 bg-emerald-700 rounded-2xl flex items-center justify-center text-white font-black text-xl mx-auto mb-6 shadow-xl">MF</div>
+              <h4 className="font-black text-xl mb-2 text-slate-800 dark:text-white">Mabda'il Falah</h4>
+              <p className="text-slate-500 dark:text-slate-400 text-sm max-w-md mx-auto mb-10 leading-relaxed italic font-medium">
+                "Barangsiapa yang menempuh jalan untuk mencari ilmu, maka Allah akan memudahkan baginya jalan ke surga."
+              </p>
+              <div className="flex justify-center gap-6 mb-10">
+                 {[
+                   { icon: 'instagram', link: '#' },
+                   { icon: 'facebook', link: '#' },
+                   { icon: 'youtube', link: '#' },
+                   { icon: 'mail', link: 'mailto:ponpes@mabdailfalah.com' }
+                 ].map((social, i) => (
+                   <a key={i} href={social.link} className="w-10 h-10 rounded-full bg-slate-100 dark:bg-gray-800 flex items-center justify-center text-slate-400 hover:bg-emerald-600 hover:text-white transition-all shadow-sm">
+                     <i data-lucide={social.icon} className="w-5 h-5" />
+                   </a>
+                 ))}
+              </div>
+              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                &copy; {new Date().getFullYear()} Pondok Pesantren Mabda'il Falah • Kp. Tanjakan Rajeg, Tangerang
+              </div>
+            </div>
+          </footer>
+
+          {/* MODAL LOGIN */}
+          {showLogin && (
+            <div className="fixed inset-0 z-[70] flex items-center justify-center px-4">
+               <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-md" onClick={() => setShowLogin(false)}></div>
+               <div className="relative bg-white dark:bg-gray-900 w-full max-w-md rounded-[2.5rem] p-8 sm:p-10 shadow-2xl animate-fade-in">
+                  <div className="text-center mb-10">
+                    <div className="w-16 h-16 bg-emerald-700 rounded-3xl flex items-center justify-center text-white font-black text-2xl mx-auto mb-6 shadow-xl">MF</div>
+                    <h3 className="text-2xl font-black mb-2 text-slate-800 dark:text-white">Akses Admin</h3>
+                    <p className="text-slate-400 text-sm font-bold">Silakan login untuk kelola konten</p>
+                  </div>
+                  <form onSubmit={handleLogin} className="space-y-5">
+                     <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600">Username</label>
+                        <div className="relative">
+                           <i data-lucide="user" className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                           <input name="username" type="text" className="w-full pl-12 pr-4 py-4 rounded-2xl bg-slate-50 dark:bg-gray-800 border-none focus:ring-2 focus:ring-emerald-500 outline-none font-bold text-slate-700 dark:text-white" required />
+                        </div>
+                     </div>
+                     <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600">Password</label>
+                        <div className="relative">
+                           <i data-lucide="key-round" className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                           <input name="password" type="password" className="w-full pl-12 pr-4 py-4 rounded-2xl bg-slate-50 dark:bg-gray-800 border-none focus:ring-2 focus:ring-emerald-500 outline-none font-bold text-slate-700 dark:text-white" required />
+                        </div>
+                     </div>
+                     <button 
+                       type="submit" 
+                       disabled={actionLoading}
+                       className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-2xl font-black text-lg transition-all shadow-xl shadow-emerald-900/20 active:scale-95 disabled:opacity-50 mt-4 flex justify-center"
+                     >
+                        {actionLoading ? <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin"></div> : "LOGIN"}
+                     </button>
+                  </form>
+               </div>
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<App />);
+  </script>
 </body>
 </html>
