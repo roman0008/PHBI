@@ -365,7 +365,7 @@
                         )}
 
                         {view === 'kas' && (
-                            <div className="max-w-6xl mx-auto px-4 lg:px-6 py-12 lg:py-20 animate-in slide-in-from-bottom-4">
+                                <div className="max-w-6xl mx-auto px-4 lg:px-6 py-12 lg:py-20 animate-in slide-in-from-bottom-4">
                                 <div className="mb-12">
                                     <h3 className="text-4xl font-black text-emerald-950 tracking-tighter mb-2">Laporan Kas PHBI</h3>
                                     <p className="text-slate-400 font-medium">Data keuangan pembangunan secara transparan dan akuntabel.</p>
@@ -470,14 +470,40 @@
                                                     <label className="text-[10px] font-black text-slate-400 uppercase ml-2">Nominal</label>
                                                     <input value={formData.amount || ''} onChange={e => setFormData({...formData, amount: e.target.value})} type="number" placeholder="Nominal Rp." className="w-full bg-slate-50 border-none p-4 rounded-2xl font-bold text-xs" required />
                                                 </div>
-                                                <div className="space-y-1">
-                                                    <label className="text-[10px] font-black text-slate-400 uppercase ml-2">Jenis Kas</label>
-                                                    <select value={formData.type || ''} onChange={e => setFormData({...formData, type: e.target.value})} className="w-full bg-slate-50 border-none p-4 rounded-2xl font-bold text-xs appearance-none" required>
-                                                        <option value="">Pilih Kategori</option>
-                                                        <option value="in">Pemasukan (+)</option>
-                                                        <option value="out">Pengeluaran (-)</option>
-                                                    </select>
-                                                </div>
+                                                {/* Kategori */}
+<div className="space-y-1">
+    <label className="text-[10px] font-black text-slate-400 uppercase ml-2">Kategori</label>
+    <select 
+        value={formData.category || ''} 
+        onChange={e => setFormData({...formData, category: e.target.value})}
+        className="w-full bg-slate-50 border-none p-4 rounded-2xl font-bold text-xs appearance-none" 
+        required
+    >
+        <option value="">-- Pilih Kategori --</option>
+        <option value="Donasi">Donasi</option>
+        <option value="Infaq">Infaq</option>
+        <option value="Shadaqah">Shadaqah</option>
+        <option value="Konsumsi">Konsumsi</option>
+        <option value="Operasional">Operasional</option>
+        <option value="Perlengkapan">Perlengkapan</option>
+        <option value="Lain-lain">Lain-lain</option>
+    </select>
+</div>
+
+{/* Jenis (masuk/keluar) */}
+<div className="space-y-1">
+    <label className="text-[10px] font-black text-slate-400 uppercase ml-2">Jenis</label>
+    <select 
+        value={formData.type || ''} 
+        onChange={e => setFormData({...formData, type: e.target.value})}
+        className="w-full bg-slate-50 border-none p-4 rounded-2xl font-bold text-xs appearance-none" 
+        required
+    >
+        <option value="">-- Pilih Jenis --</option>
+        <option value="in">Masuk (+)</option>
+        <option value="out">Keluar (-)</option>
+    </select>
+</div>
                                             </>
                                         )}
 
